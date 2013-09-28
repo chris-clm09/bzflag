@@ -52,7 +52,6 @@ class Agent(object):
         self.commands = []
 
         self.counter += 1
-        print self.counter, " ", time_diff
         
         for tank in self.mytanks:
             self.moveForwardOrTurn(tank)
@@ -68,7 +67,7 @@ class Agent(object):
             self.commands.append(command)
         elif self.counter > 70 and self.counter < 160:
             #Stop and Turn
-            command = Command(tank.index, 0.1, 1.0, False)
+            command = Command(tank.index, 0.5, 1.0, False)
             self.commands.append(command)
         else:
             #Reset
