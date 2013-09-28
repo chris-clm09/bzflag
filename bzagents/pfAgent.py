@@ -25,22 +25,22 @@ def sign(a):
 ####################################################################
 # 
 ####################################################################
-def generateRepulsiveField(x,y, obsticle):
+def generateAnRepulsiveField(x,y, obsticle):
     r  = distancePoints(obsticle[0][0],
                         obsticle[0][1],
                         obsticle[2][0],
                         obsticle[2][1]) / 2.0
     center = (obsticle[0][0] + ((obsticle[2][0] - obsticle[0][0]) / 2.0),
               obsticle[0][1] + ((obsticle[2][1] - obsticle[0][1]) / 2.0))
-    s  = 20.0
+    s  = 40.0
     b = 1.0/s
     
-    d     = distance(x,y,center[0], center[1])
+    d     = distancePoints(x,y,center[0], center[1])
     theta = math.atan2(center[1] - y, center[0] - x)
     
     temp = None
     if d < r:
-        temp = (-sign(math.cos(theta)) * 1.0, -sign(math.sin(theta)) * 1.0)
+        temp = (-math.cos(theta) * s, -math.sin(theta) * s)
     elif r <= d and d <= s+r:
         temp = (-b * (s + r -d)*math.cos(theta), -b * (s+r-d) * math.sin(theta))
     elif d > s+r:
@@ -55,7 +55,7 @@ def generateRepulsiveField(x, y, obsticles):
     total = [0,0]
     
     for o in obsticles:
-        temp = generateRepulsiveField(x,y,o)
+        temp = generateAnRepulsiveField(x,y,o)
         total[0] += temp[0]
         total[1] += temp[1]
         
@@ -165,7 +165,7 @@ class Agent(object):
         
         printer = PFPrinter('rFields.gpi')
         printer.printObsticles(obsticles)        
-        printer.printPotentialFields(lambda x,y: generateRepulsiveField(x, y,flags))
+        printer.printPotentialFields(lambda x,y: generateRepulsiveField(x, y,obsticles))
         
         
 
