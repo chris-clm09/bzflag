@@ -16,12 +16,46 @@ def generateRepulsiveField(index, obsticles):
     
     return [1,1]
 
+def distance(x,y,goal):
+    return math.sqrt(((goal.y - y) * (goal.y - y)) + ((goal.x - x) * (goal.x - x)))
 ####################################################################
 # 
 ####################################################################
-def generateAttractiveField(index, goals):
+def genAnAttractiveField(x, y, goal):
+    r  = 10.0
+    s  = 100.0
+    al = 1.0/s
     
-    return [1,1]
+    d = distance(x,y,goal)
+    
+    theta = math.atan2(goal.y - y, goal.x - x)
+    
+    temp = None
+    if d < r:
+        temp = (0.0,0.0)
+    elif r <= d and d <= s+r:
+        temp = (al*(d-r)*math.cos(theta), al*(d-r)*math.sin(theta))
+    elif d > s+r:
+        temp = (al*s*math.cos(theta), al*s*math.sin(theta))
+
+    return temp
+
+####################################################################
+# 
+####################################################################
+def generateAttractiveField(x, y, goals):
+    total = [0,0]
+    
+    amin = distance(x,y,goals[0])
+    minGoal = goals[0]
+    
+    for g in goals:
+        temp = distance(x,y,g)
+        if temp < amin:
+            minGoal = g
+            amin = temp
+    
+    return genAnAttractiveField(x,y,minGoal)
 
 ####################################################################
 # 
@@ -85,8 +119,8 @@ class Agent(object):
         printer = PFPrinter('obs.gpi')
         printer.printObsticles(obsticles)
         
-        printer.printPotentialFields(lambda x,y: generateAttractiveField((x,y),flags))
-        
+        printer.printPotentialFields(lambda x,y: generateAttractiveField(x, y,flags))
+        #printer.printPotentialFields(lambda x,y: genAnAttractiveField(x, y,flags[2]))
         
 
 def main():
