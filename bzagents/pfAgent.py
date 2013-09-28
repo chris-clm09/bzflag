@@ -8,18 +8,61 @@ from myPrint import *
 from bzrc import BZRC, Command
 
 ###########################Potential Field Fun############################################
-    
-####################################################################
-# 
-####################################################################
-def generateRepulsiveField(index, obsticles):
-    
-    return [1,1]
 
+####################################################################
+# Distance between two points.
+####################################################################
 def distance(x,y,goal):
-    return math.sqrt(((goal.y - y) * (goal.y - y)) + ((goal.x - x) * (goal.x - x)))
+    return math.sqrt(((goal.y - y)*(goal.y - y)) + ((goal.x - x)*(goal.x - x)))
+def distancePoints(x,y,xg,yg):
+    return math.sqrt(((yg - y)*(yg - y)) + ((xg - x)*(xg - x)))
+   
+def sign(a):
+    if a == 0 or a == -0:
+        return 0
+    return a / -a
+
 ####################################################################
 # 
+####################################################################
+def generateRepulsiveField(x,y, obsticle):
+    r  = distancePoints(obsticle[0][0],
+                        obsticle[0][1],
+                        obsticle[2][0],
+                        obsticle[2][1]) / 2.0
+    center = (obsticle[0][0] + ((obsticle[2][0] - obsticle[0][0]) / 2.0),
+              obsticle[0][1] + ((obsticle[2][1] - obsticle[0][1]) / 2.0))
+    s  = 20.0
+    b = 1.0/s
+    
+    d     = distance(x,y,center[0], center[1])
+    theta = math.atan2(center[1] - y, center[0] - x)
+    
+    temp = None
+    if d < r:
+        temp = (-sign(math.cos(theta)) * 1.0, -sign(math.sin(theta)) * 1.0)
+    elif r <= d and d <= s+r:
+        temp = (-b * (s + r -d)*math.cos(theta), -b * (s+r-d) * math.sin(theta))
+    elif d > s+r:
+        temp = (0,0)
+    
+    return temp
+    
+####################################################################
+# 
+####################################################################
+def generateRepulsiveField(x, y, obsticles):
+    total = [0,0]
+    
+    for o in obsticles:
+        temp = generateRepulsiveField(x,y,o)
+        total[0] += temp[0]
+        total[1] += temp[1]
+        
+    return total
+
+####################################################################
+# Generate a single atractive vector.
 ####################################################################
 def genAnAttractiveField(x, y, goal):
     r  = 10.0
@@ -41,7 +84,7 @@ def genAnAttractiveField(x, y, goal):
     return temp
 
 ####################################################################
-# 
+# Genertes the attractive vector given every possible goal.
 ####################################################################
 def generateAttractiveField(x, y, goals):
     total = [0,0]
@@ -116,11 +159,14 @@ class Agent(object):
         obsticles = self.bzrc.get_obstacles()
         flags     = self.removeMyFlag(self.bzrc.get_flags())
         
-        printer = PFPrinter('obs.gpi')
-        printer.printObsticles(obsticles)
+        #printer = PFPrinter('aFields.gpi')
+        #printer.printObsticles(obsticles)        
+        #printer.printPotentialFields(lambda x,y: generateAttractiveField(x, y,flags))
         
-        printer.printPotentialFields(lambda x,y: generateAttractiveField(x, y,flags))
-        #printer.printPotentialFields(lambda x,y: genAnAttractiveField(x, y,flags[2]))
+        printer = PFPrinter('rFields.gpi')
+        printer.printObsticles(obsticles)        
+        printer.printPotentialFields(lambda x,y: generateRepulsiveField(x, y,flags))
+        
         
 
 def main():
