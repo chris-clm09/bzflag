@@ -23,9 +23,9 @@ def sign(a):
     return a / -a
 
 ####################################################################
-# 
+# Generate a Single Repulsive feild.
 ####################################################################
-def generateAnRepulsiveField(x,y, obsticle):
+def generateAnRepulsiveField(x,y, obsticle, makeItTangent=False):
     r  = distancePoints(obsticle[0][0],
                         obsticle[0][1],
                         obsticle[2][0],
@@ -38,6 +38,9 @@ def generateAnRepulsiveField(x,y, obsticle):
     d     = distancePoints(x,y,center[0], center[1])
     theta = math.atan2(center[1] - y, center[0] - x)
     
+    if makeItTangent:
+        theta -= (math.pi / 2.0)
+    
     temp = None
     if d < r:
         temp = (-math.cos(theta) * s, -math.sin(theta) * s)
@@ -49,7 +52,7 @@ def generateAnRepulsiveField(x,y, obsticle):
     return temp
     
 ####################################################################
-# 
+# Calculate repulsive fields on a given location.
 ####################################################################
 def generateRepulsiveField(x, y, obsticles):
     total = [0,0]
@@ -101,11 +104,17 @@ def generateAttractiveField(x, y, goals):
     return genAnAttractiveField(x,y,minGoal)
 
 ####################################################################
-# 
+# Calculate a Tangential field
 ####################################################################
-def generateTangentialFields(index, obsticles):
+def generateTangentialFields(x, y, obsticles):
+    total = [0,0]
     
-    return [1,1]
+    for o in obsticles:
+        temp = generateAnRepulsiveField(x, y, o, True)
+        total[0] += temp[0]
+        total[1] += temp[1]
+        
+    return total
 
 
 class Agent(object):
@@ -163,10 +172,14 @@ class Agent(object):
         #printer.printObsticles(obsticles)        
         #printer.printPotentialFields(lambda x,y: generateAttractiveField(x, y,flags))
         
-        printer = PFPrinter('rFields.gpi')
-        printer.printObsticles(obsticles)        
-        printer.printPotentialFields(lambda x,y: generateRepulsiveField(x, y,obsticles))
+        #printer = PFPrinter('rFields.gpi')
+        #printer.printObsticles(obsticles)        
+        #printer.printPotentialFields(lambda x,y: generateRepulsiveField(x, y,obsticles))
         
+        printer = PFPrinter('tFields.gpi')
+        printer.printObsticles(obsticles)        
+        printer.printPotentialFields(lambda x,y: generateTangentialFields(x, y,obsticles))
+
         
 
 def main():
