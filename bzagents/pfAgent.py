@@ -116,7 +116,27 @@ def generateTangentialFields(x, y, obsticles):
         
     return total
 
+####################################################################
+# Generate the potential field for a given point.
+####################################################################
+def generatePotentialField(x,y,flags,obsticles):
+    
+    tan = generateTangentialFields(x,y,obsticles)
+    att = generateAttractiveField(x,y,flags)
+    rep = generateRepulsiveField(x,y,obsticles)
+    
+    return (tan[0] + att[0] + rep[0],
+            tan[1] + att[1] + rep[1])
 
+
+
+
+####################################################################
+####################################################################
+## Calculate a Tangential field
+##
+####################################################################
+####################################################################
 class Agent(object):
     """Class handles all command and control logic for a teams tanks."""
 
@@ -174,12 +194,15 @@ class Agent(object):
         
         #printer = PFPrinter('rFields.gpi')
         #printer.printObsticles(obsticles)        
-        #printer.printPotentialFields(lambda x,y: generateRepulsiveField(x, y,obsticles))
+        #printer.printPotentialFields(lambda x,y: generateRepulsiveField(x, y, obsticles))
         
-        printer = PFPrinter('tFields.gpi')
-        printer.printObsticles(obsticles)        
-        printer.printPotentialFields(lambda x,y: generateTangentialFields(x, y,obsticles))
+        #printer = PFPrinter('tFields.gpi')
+        #printer.printObsticles(obsticles)        
+        #printer.printPotentialFields(lambda x,y: generateTangentialFields(x, y, obsticles))
 
+        printer = PFPrinter('pFields.gpi')
+        printer.printObsticles(obsticles)        
+        printer.printPotentialFields(lambda x,y: generatePotentialField(x, y, flags, obsticles))
         
 
 def main():
