@@ -25,7 +25,7 @@ def sign(a):
 ####################################################################
 # Generate a Single Repulsive feild.
 ####################################################################
-def generateAnRepulsiveField(x,y, obsticle, makeItTangent=False):
+def generateAnRepulsiveField(x,y, obsticle, makeItTangent=False, goal=None):
     r  = distancePoints(obsticle[0][0],
                         obsticle[0][1],
                         obsticle[2][0],
@@ -38,14 +38,32 @@ def generateAnRepulsiveField(x,y, obsticle, makeItTangent=False):
     d     = distancePoints(x,y,center[0], center[1])
     theta = math.atan2(center[1] - y, center[0] - x)
     
+    dx = -math.cos(theta)
+    dy = -math.sin(theta)
+    
     if makeItTangent:
-        theta -= (math.pi / 2.0)
+        thetaL = theta - (math.pi / 2.0)
+        thetaR = theta + (math.pi / 2.0)
+        
+        dxL = -math.cos(thetaL)
+        dyL = -math.sin(thetaL)
+        
+        dxR = -math.cos(thetaR)
+        dyR = -math.sin(thetaR)
+        
+        if distancePoints(x + dxL, y + dyL, goal.x, goal.y) < distancePoints(x+dxR,y+dyR,goal.x,goal.y):
+            dx = dxL
+            dy = dyL
+        else:
+            dx = dxR
+            dy = dyR
+        
     
     temp = None
     if d < r:
-        temp = (-math.cos(theta) * s, -math.sin(theta) * s)
+        temp = (dx * s, dy * s)
     elif r <= d and d <= s+r:
-        temp = (-b * (s + r -d)*math.cos(theta), -b * (s+r-d) * math.sin(theta))
+        temp = (b * (s + r -d) * dx, b * (s + r - d) * dy)
     elif d > s+r:
         temp = (0,0)
     
@@ -87,11 +105,9 @@ def genAnAttractiveField(x, y, goal):
     return temp
 
 ####################################################################
-# Genertes the attractive vector given every possible goal.
+# Return the closest goal.
 ####################################################################
-def generateAttractiveField(x, y, goals):
-    total = [0,0]
-    
+def getMinGoal(x,y,goals):
     amin = distance(x,y,goals[0])
     minGoal = goals[0]
     
@@ -101,16 +117,26 @@ def generateAttractiveField(x, y, goals):
             minGoal = g
             amin = temp
     
+    return minGoal
+
+####################################################################
+# Genertes the attractive vector given every possible goal.
+####################################################################
+def generateAttractiveField(x, y, goals):
+    total = [0,0]
+    
+    minGoal = getMinGoal(x,y,goals)
+    
     return genAnAttractiveField(x,y,minGoal)
 
 ####################################################################
 # Calculate a Tangential field
 ####################################################################
-def generateTangentialFields(x, y, obsticles):
+def generateTangentialFields(x, y, obsticles, goal):
     total = [0,0]
     
     for o in obsticles:
-        temp = generateAnRepulsiveField(x, y, o, True)
+        temp = generateAnRepulsiveField(x, y, o, True, goal)
         total[0] += temp[0]
         total[1] += temp[1]
         
@@ -121,7 +147,7 @@ def generateTangentialFields(x, y, obsticles):
 ####################################################################
 def generatePotentialField(x,y,flags,obsticles):
     
-    tan = generateTangentialFields(x,y,obsticles)
+    tan = generateTangentialFields(x,y,obsticles, getMinGoal(x,y,flags))
     att = generateAttractiveField(x,y,flags)
     rep = generateRepulsiveField(x,y,obsticles)
     
@@ -177,6 +203,8 @@ class Agent(object):
         self.commands = []
 
         for tank in mytanks:
+            #if tank.index == 0:
+            #    self.sendToCaptureFlag(tank, time_diff)
             self.sendToCaptureFlag(tank, time_diff)
             #self.attack_enemies(tank)
 
@@ -186,6 +214,9 @@ class Agent(object):
     ####################################################################
     def determinedGoals(self, tank):
         if tank.flag == '-':
+            for f in self.flags:
+                print f.color, " "
+            print ""
             return self.flags
         else:
             return [self.homeBaseCenter]
@@ -204,6 +235,8 @@ class Agent(object):
                                                self.obsticles)
         newTheta      = math.atan2(deltaPosition[1], deltaPosition[0])
         
+        #newTheta = self.normalize_angle(newTheta)
+        
         error = newTheta - tank.angle
         
         derivative       = error - self.error0
@@ -214,12 +247,11 @@ class Agent(object):
         
         tempAngle = math.fabs(newAngleVelocity)
         if tempAngle >= 1:
-            speed = 0
+            speed = 0.5
+            #print tank.x, ":", tank.y, " dPos: ", deltaPosition[0], ":", deltaPosition[1], " V: ", newAngleVelocity, " Goal: ", self.determinedGoals(tank)[0].x, ":", self.determinedGoals(tank)[0].y
         else:
             speed = 1.0 - tempAngle
         
-        #if tank.index == 0:
-        #    print "speed: ", speed, " aVel: ", newAngleVelocity
         captureFlagCommand = Command(tank.index, speed, newAngleVelocity, True)
         self.commands.append(captureFlagCommand)
         
@@ -253,9 +285,13 @@ class Agent(object):
     ####################################################################
     def removeMyFlag(self, flags):
         temp = None
+        print "Remove me:"
         for f in flags:
+            print f.color, "==", self.constants['team']
+
             if f.color == self.constants['team']:
                 temp = f
+....
 
         flags.remove(f)
         return flags
