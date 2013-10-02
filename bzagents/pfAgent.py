@@ -126,7 +126,7 @@ def generateAttractiveField(x, y, goals):
     total = [0,0]
     
     minGoal = getMinGoal(x,y,goals)
-    
+        
     return genAnAttractiveField(x,y,minGoal)
 
 ####################################################################
@@ -184,8 +184,11 @@ class Agent(object):
             if base.color == self.constants['team']:
                 self.homeBase = base
         
-        self.homeBaseCenter = HomeBaseCenter(base.corner1_x + ((base.corner3_x - base.corner1_x) / 2.0),
-                                             base.corner1_y + ((base.corner3_y - base.corner1_y) / 2.0))
+        self.homeBaseCenter = HomeBaseCenter(self.homeBase.corner1_x + ((self.homeBase.corner3_x - self.homeBase.corner1_x) / 2.0),
+                                             self.homeBase.corner1_y + ((self.homeBase.corner3_y - self.homeBase.corner1_y) / 2.0))
+
+        self.timeSet = [0,0,0,0,0,0,0,0,0,0]
+        self.error0 = [0,0,0,0,0,0,0,0,0,0]
 
     ####################################################################
     ####################################################################
@@ -214,9 +217,6 @@ class Agent(object):
     ####################################################################
     def determinedGoals(self, tank):
         if tank.flag == '-':
-            for f in self.flags:
-                print f.color, " "
-            print ""
             return self.flags
         else:
             return [self.homeBaseCenter]
@@ -227,27 +227,28 @@ class Agent(object):
     ####################################################################
     ####################################################################
     def sendToCaptureFlag(self, tank, time_diff):
-        self.Kp = 0.50
-        self.Kd = 0.60
+        self.Kp = 0.40
+        self.Kd = 0.50
         
         deltaPosition = generatePotentialField(tank.x, tank.y,
                                                self.determinedGoals(tank),
                                                self.obsticles)
         newTheta      = math.atan2(deltaPosition[1], deltaPosition[0])
         
-        #newTheta = self.normalize_angle(newTheta)
-        
         error = newTheta - tank.angle
         
-        derivative       = error - self.error0
+        derivative       = (error - self.error0[tank.index])/ (time_diff - self.timeSet[tank.index])
+      
         newAngleVelocity = (self.Kp * error) + (self.Kd * derivative)
+        
+        #print newAngleVelocity, " kp: ", (self.Kp * error), " Kd: ", (self.Kd * derivative), " E: ", error, " oE: ", self.error0[tank.index], " timeDiff: ", (time_diff - self.timeSet[tank.index])
         
         speed = math.sqrt(math.pow(deltaPosition[0], 2) +
                           math.pow(deltaPosition[1], 2))
         
         tempAngle = math.fabs(newAngleVelocity)
         if tempAngle >= 1:
-            speed = 0.5
+            speed = 0.2
             #print tank.x, ":", tank.y, " dPos: ", deltaPosition[0], ":", deltaPosition[1], " V: ", newAngleVelocity, " Goal: ", self.determinedGoals(tank)[0].x, ":", self.determinedGoals(tank)[0].y
         else:
             speed = 1.0 - tempAngle
@@ -255,7 +256,8 @@ class Agent(object):
         captureFlagCommand = Command(tank.index, speed, newAngleVelocity, True)
         self.commands.append(captureFlagCommand)
         
-        self.error0 = error
+        self.error0[tank.index] = error
+        self.timeSet[tank.index] = time_diff
         
         return 
 
@@ -285,15 +287,11 @@ class Agent(object):
     ####################################################################
     def removeMyFlag(self, flags):
         temp = None
-        print "Remove me:"
         for f in flags:
-            print f.color, "==", self.constants['team']
-
             if f.color == self.constants['team']:
                 temp = f
-....
 
-        flags.remove(f)
+        flags.remove(temp)
         return flags
     
     ####################################################################
@@ -351,8 +349,7 @@ def main():
     # Run the agent
     try:
         while True:
-            time_diff = time.time() - prev_time
-            prev_time = time.time()
+            time_diff = time.time()
             agent.tick(time_diff)
     except KeyboardInterrupt:
         print "Exiting due to keyboard interrupt."
