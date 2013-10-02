@@ -68,8 +68,8 @@ def generateRepulsiveField(x, y, obsticles):
 # Generate a single atractive vector.
 ####################################################################
 def genAnAttractiveField(x, y, goal):
-    r  = 10.0
-    s  = 100.0
+    r  = 1.5
+    s  = 30.0
     al = 1.0/s
     
     d = distance(x,y,goal)
@@ -129,7 +129,10 @@ def generatePotentialField(x,y,flags,obsticles):
             tan[1] + att[1] + rep[1])
 
 
-
+class HomeBaseCenter(object):
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
 
 ####################################################################
 ####################################################################
@@ -146,7 +149,83 @@ class Agent(object):
     def __init__(self, bzrc):
         self.bzrc = bzrc
         self.constants = self.bzrc.get_constants()
+        self.obsticles = self.bzrc.get_obstacles()
         self.commands = []
+        self.error0   = 0
+        
+        bases = self.bzrc.get_bases()
+        for base in bases:
+            if base.color == self.constants['team']:
+                self.homeBase = base
+        
+        self.homeBaseCenter = HomeBaseCenter(base.corner1_x + ((base.corner3_x - base.corner1_x) / 2.0),
+                                             base.corner1_y + ((base.corner3_y - base.corner1_y) / 2.0))
+
+    ####################################################################
+    ####################################################################
+    def tick(self, time_diff):
+        mytanks, othertanks, flags, shots = self.bzrc.get_lots_o_stuff()
+        
+        self.mytanks    = mytanks
+        self.othertanks = othertanks
+        self.flags      = self.removeMyFlag(flags)
+        self.shots      = shots
+        self.enemies    = [tank for tank in othertanks
+                           if tank.color != self.constants['team']]
+
+        #Clear Commands
+        self.commands = []
+
+        for tank in mytanks:
+            self.sendToCaptureFlag(tank, time_diff)
+            #self.attack_enemies(tank)
+
+        results = self.bzrc.do_commands(self.commands)
+
+    ####################################################################
+    ####################################################################
+    def determinedGoals(self, tank):
+        if tank.flag == '-':
+            return self.flags
+        else:
+            return [self.homeBaseCenter]
+
+    def generateHomePotentialField(self,x,y):
+        return generatePotentialField(x,y,[self.homeBaseCenter],self.obsticles)
+
+    ####################################################################
+    ####################################################################
+    def sendToCaptureFlag(self, tank, time_diff):
+        self.Kp = 0.50
+        self.Kd = 0.60
+        
+        deltaPosition = generatePotentialField(tank.x, tank.y,
+                                               self.determinedGoals(tank),
+                                               self.obsticles)
+        newTheta      = math.atan2(deltaPosition[1], deltaPosition[0])
+        
+        error = newTheta - tank.angle
+        
+        derivative       = error - self.error0
+        newAngleVelocity = (self.Kp * error) + (self.Kd * derivative)
+        
+        speed = math.sqrt(math.pow(deltaPosition[0], 2) +
+                          math.pow(deltaPosition[1], 2))
+        
+        tempAngle = math.fabs(newAngleVelocity)
+        if tempAngle >= 1:
+            speed = 0
+        else:
+            speed = 1.0 - tempAngle
+        
+        #if tank.index == 0:
+        #    print "speed: ", speed, " aVel: ", newAngleVelocity
+        captureFlagCommand = Command(tank.index, speed, newAngleVelocity, True)
+        self.commands.append(captureFlagCommand)
+        
+        self.error0 = error
+        
+        return 
 
     ####################################################################
     # Set command to move to given coordinates.
@@ -170,23 +249,29 @@ class Agent(object):
         return angle
 
     ####################################################################
+    # Remove my flag from the list.
     ####################################################################
     def removeMyFlag(self, flags):
         temp = None
         for f in flags:
             if f.color == self.constants['team']:
                 temp = f
-            else:
-                print f.color, " ", f.x, ":", f.y
+
         flags.remove(f)
         return flags
-
+    
+    ####################################################################
+    # Return all of the flags in the game save my own.
+    ####################################################################
+    def getTargetFlags(self):
+        return self.removeMyFlag(self.bzrc.get_flags())
+    
     ####################################################################
     # Make any angle be between +/- pi.
     ####################################################################
     def printPFields(self):
         obsticles = self.bzrc.get_obstacles()
-        flags     = self.removeMyFlag(self.bzrc.get_flags())
+        flags     = self.getTargetFlags()
         
         #printer = PFPrinter('aFields.gpi')
         #printer.printObsticles(obsticles)        
@@ -199,6 +284,10 @@ class Agent(object):
         #printer = PFPrinter('tFields.gpi')
         #printer.printObsticles(obsticles)        
         #printer.printPotentialFields(lambda x,y: generateTangentialFields(x, y, obsticles))
+
+        printer = PFPrinter('homeFields.gpi')
+        printer.printObsticles(obsticles)
+        printer.printPotentialFields(lambda x,y: self.generateHomePotentialField(x, y))
 
         printer = PFPrinter('pFields.gpi')
         printer.printObsticles(obsticles)        
@@ -221,17 +310,16 @@ def main():
 
     agent = Agent(bzrc)
 
+    prev_time = time.time()
     
-
-    #prev_time = time.time()
-    #
-    ## Run the agent
-    #try:
-    #    while True:
-    #        time_diff = time.time() - prev_time
-    #        agent.tick(time_diff)
-    #except KeyboardInterrupt:
-    #    print "Exiting due to keyboard interrupt."
+    # Run the agent
+    try:
+        while True:
+            time_diff = time.time() - prev_time
+            prev_time = time.time()
+            agent.tick(time_diff)
+    except KeyboardInterrupt:
+        print "Exiting due to keyboard interrupt."
     bzrc.close()
 
 
@@ -243,7 +331,9 @@ if __name__ == '__main__':
             bzrc = BZRC(host, int(port))
             agent = Agent(bzrc)
             agent.printPFields()
-    
-    #main()
+            bzrc.close()
+            
+    else:
+        main()
 
 # vim: et sw=4 sts=4
