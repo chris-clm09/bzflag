@@ -32,7 +32,7 @@ def generateAnRepulsiveField(x,y, obsticle, makeItTangent=False, goal=None):
                         obsticle[2][1]) / 2.0
     center = (obsticle[0][0] + ((obsticle[2][0] - obsticle[0][0]) / 2.0),
               obsticle[0][1] + ((obsticle[2][1] - obsticle[0][1]) / 2.0))
-    s  = 40.0
+    s  = 60.0
     b = 1.0/s
     
     d     = distancePoints(x,y,center[0], center[1])
@@ -227,15 +227,25 @@ class Agent(object):
     ####################################################################
     ####################################################################
     def sendToCaptureFlag(self, tank, time_diff):
-        self.Kp = 0.40
+        self.Kp = 0.60
         self.Kd = 0.50
         
         deltaPosition = generatePotentialField(tank.x, tank.y,
                                                self.determinedGoals(tank),
                                                self.obsticles)
+        
+        #print "DPosition: ", deltaPosition[0],":", deltaPosition[1]
+        
         newTheta      = math.atan2(deltaPosition[1], deltaPosition[0])
         
-        error = newTheta - tank.angle
+        newTheta     = newTheta + 2 * math.pi if newTheta < 0 else newTheta
+        posTankAngle = tank.angle + 2 * math.pi if tank.angle < 0 else tank.angle
+        
+        error = newTheta - posTankAngle
+        
+        error = error - 2 * math.pi if error > math.pi else error
+        
+        #print "newAngle: ", newTheta, ", tankAngle: ", tank.angle, " Error: ", error
         
         derivative       = (error - self.error0[tank.index])/ (time_diff - self.timeSet[tank.index])
       
@@ -243,13 +253,11 @@ class Agent(object):
         
         #print newAngleVelocity, " kp: ", (self.Kp * error), " Kd: ", (self.Kd * derivative), " E: ", error, " oE: ", self.error0[tank.index], " timeDiff: ", (time_diff - self.timeSet[tank.index])
         
-        speed = math.sqrt(math.pow(deltaPosition[0], 2) +
-                          math.pow(deltaPosition[1], 2))
+        speed = math.sqrt(math.pow(deltaPosition[0], 2) + math.pow(deltaPosition[1], 2))
         
         tempAngle = math.fabs(newAngleVelocity)
         if tempAngle >= 1:
-            speed = 0.2
-            #print tank.x, ":", tank.y, " dPos: ", deltaPosition[0], ":", deltaPosition[1], " V: ", newAngleVelocity, " Goal: ", self.determinedGoals(tank)[0].x, ":", self.determinedGoals(tank)[0].y
+            speed = 0.0
         else:
             speed = 1.0 - tempAngle
         
