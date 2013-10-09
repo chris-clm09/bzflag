@@ -17,7 +17,7 @@ def distance(x, y, goal):
     return math.sqrt(((goal.y - y)*(goal.y - y)) + ((goal.x - x)*(goal.x - x)))
 
 
-def distancePoints(x, y, xg, yg):
+def distance_points(x, y, xg, yg):
     return math.sqrt(((yg - y)*(yg - y)) + ((xg - x)*(xg - x)))
 
 
@@ -30,40 +30,39 @@ def sign(a):
 ####################################################################
 # Generate a Single Repulsive field.
 ####################################################################
-def generateAnRepulsiveField(x, y, obstacle, makeItTangent=False, goal=None):
-    r = distancePoints(obstacle[0][0],
-                       obstacle[0][1],
-                       obstacle[2][0],
-                       obstacle[2][1]) / 2.0
+def generate_a_repulsive_field(x, y, obstacle, make_it_tangent=False, goal=None):
+    r = distance_points(obstacle[0][0],
+                        obstacle[0][1],
+                        obstacle[2][0],
+                        obstacle[2][1]) / 2.0
     center = (obstacle[0][0] + ((obstacle[2][0] - obstacle[0][0]) / 2.0),
               obstacle[0][1] + ((obstacle[2][1] - obstacle[0][1]) / 2.0))
     s = 60.0
     b = 1.0/s
     
-    d = distancePoints(x, y, center[0], center[1])
+    d = distance_points(x, y, center[0], center[1])
     theta = math.atan2(center[1] - y, center[0] - x)
     
     dx = -math.cos(theta)
     dy = -math.sin(theta)
     
-    if makeItTangent:
-        thetaL = theta - (math.pi / 2.0)
-        thetaR = theta + (math.pi / 2.0)
+    if make_it_tangent:
+        theta_l = theta - (math.pi / 2.0)
+        theta_r = theta + (math.pi / 2.0)
         
-        dxL = -math.cos(thetaL)
-        dyL = -math.sin(thetaL)
+        dx_l = -math.cos(theta_l)
+        dy_l = -math.sin(theta_l)
         
-        dxR = -math.cos(thetaR)
-        dyR = -math.sin(thetaR)
+        dx_r = -math.cos(theta_r)
+        dy_r = -math.sin(theta_r)
         
-        if distancePoints(x + dxL, y + dyL, goal.x, goal.y) < distancePoints(x+dxR,y+dyR,goal.x,goal.y):
-            dx = dxL
-            dy = dyL
+        if distance_points(x + dx_l, y + dy_l, goal.x, goal.y) < distance_points(x+dx_r, y+dy_r, goal.x, goal.y):
+            dx = dx_l
+            dy = dy_l
         else:
-            dx = dxR
-            dy = dyR
-        
-    
+            dx = dx_r
+            dy = dy_r
+
     temp = None
     if d < r:
         temp = (dx * s, dy * s)
@@ -78,11 +77,11 @@ def generateAnRepulsiveField(x, y, obstacle, makeItTangent=False, goal=None):
 ####################################################################
 # Calculate repulsive fields on a given location.
 ####################################################################
-def generateRepulsiveField(x, y, obstacles):
+def generate_repulsive_field(x, y, obstacles):
     total = [0, 0]
     
     for o in obstacles:
-        temp = generateAnRepulsiveField(x, y, o)
+        temp = generate_a_repulsive_field(x, y, o)
         total[0] += temp[0]
         total[1] += temp[1]
         
@@ -92,7 +91,7 @@ def generateRepulsiveField(x, y, obstacles):
 ####################################################################
 # Generate a single attractive vector.
 ####################################################################
-def genAnAttractiveField(x, y, goal):
+def gen_an_attractive_field(x, y, goal):
     r = 1.5
     s = 30.0
     al = 1.0/s
@@ -115,38 +114,36 @@ def genAnAttractiveField(x, y, goal):
 ####################################################################
 # Return the closest goal.
 ####################################################################
-def getMinGoal(x, y, goals):
-    amin = distance(x, y, goals[0])
-    minGoal = goals[0]
+def get_min_goal(x, y, goals):
+    a_min = distance(x, y, goals[0])
+    min_goal = goals[0]
     
     for g in goals:
         temp = distance(x, y, g)
-        if temp < amin:
-            minGoal = g
-            amin = temp
+        if temp < a_min:
+            min_goal = g
+            a_min = temp
     
-    return minGoal
+    return min_goal
 
 
 ####################################################################
 # Generates the attractive vector given every possible goal.
 ####################################################################
-def generateAttractiveField(x, y, goals):
-    total = [0, 0]
-    
-    minGoal = getMinGoal(x, y, goals)
+def generate_attractive_field(x, y, goals):
+    min_goal = get_min_goal(x, y, goals)
         
-    return genAnAttractiveField(x, y, minGoal)
+    return gen_an_attractive_field(x, y, min_goal)
 
 
 ####################################################################
 # Calculate a Tangential field
 ####################################################################
-def generateTangentialFields(x, y, obstacles, goal):
+def generate_tangential_fields(x, y, obstacles, goal):
     total = [0, 0]
     
     for o in obstacles:
-        temp = generateAnRepulsiveField(x, y, o, True, goal)
+        temp = generate_a_repulsive_field(x, y, o, True, goal)
         total[0] += temp[0]
         total[1] += temp[1]
         
@@ -156,11 +153,10 @@ def generateTangentialFields(x, y, obstacles, goal):
 ####################################################################
 # Generate the potential field for a given point.
 ####################################################################
-def generatePotentialField(x, y, flags, obstacles):
-    
-    tan = generateTangentialFields(x, y, obstacles, getMinGoal(x, y, flags))
-    att = generateAttractiveField(x, y, flags)
-    rep = generateRepulsiveField(x, y, obstacles)
+def generate_potential_field(x, y, flags, obstacles):
+    tan = generate_tangential_fields(x, y, obstacles, get_min_goal(x, y, flags))
+    att = generate_attractive_field(x, y, flags)
+    rep = generate_repulsive_field(x, y, obstacles)
     
     return (tan[0] + att[0] + rep[0],
             tan[1] + att[1] + rep[1])
@@ -189,94 +185,98 @@ class Agent(object):
         self.obstacles = self.bzrc.get_obstacles()
         self.commands = []
         self.error0 = 0
+        self.my_tanks = None
+        self.other_tanks = None
+        self.flags = None
+        self.shots = None
+        self.enemies = None
+        self.kp = 0.60
+        self.kd = 0.50
         
         bases = self.bzrc.get_bases()
         for base in bases:
             if base.color == self.constants['team']:
-                self.homeBase = base
+                self.home_base = base
         
-        self.homeBaseCenter = HomeBaseCenter(self.homeBase.corner1_x + ((self.homeBase.corner3_x - self.homeBase.corner1_x) / 2.0),
-                                             self.homeBase.corner1_y + ((self.homeBase.corner3_y - self.homeBase.corner1_y) / 2.0))
+        self.home_base_center = HomeBaseCenter(self.home_base.corner1_x + ((self.home_base.corner3_x - self.home_base.corner1_x) / 2.0),
+                                               self.home_base.corner1_y + ((self.home_base.corner3_y - self.home_base.corner1_y) / 2.0))
 
-        self.timeSet = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        self.time_set = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
         self.error0 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
     ####################################################################
     ####################################################################
     def tick(self, time_diff):
-        mytanks, othertanks, flags, shots = self.bzrc.get_lots_o_stuff()
+        my_tanks, other_tanks, flags, shots = self.bzrc.get_lots_o_stuff()
         
-        self.mytanks = mytanks
-        self.othertanks = othertanks
-        self.flags = self.removeMyFlag(flags)
+        self.my_tanks = my_tanks
+        self.other_tanks = other_tanks
+        self.flags = self.remove_my_flag(flags)
         self.shots = shots
-        self.enemies = [tank for tank in othertanks
+        self.enemies = [tank for tank in other_tanks
                         if tank.color != self.constants['team']]
 
         #Clear Commands
         self.commands = []
 
-        for tank in mytanks:
+        for tank in my_tanks:
             #if tank.index == 0:
             #    self.sendToCaptureFlag(tank, time_diff)
-            self.sendToCaptureFlag(tank, time_diff)
+            self.send_to_capture_flag(tank, time_diff)
             #self.attack_enemies(tank)
 
         results = self.bzrc.do_commands(self.commands)
 
     ####################################################################
     ####################################################################
-    def determinedGoals(self, tank):
+    def determined_goals(self, tank):
         if tank.flag == '-':
             return self.flags
         else:
-            return [self.homeBaseCenter]
+            return [self.home_base_center]
 
-    def generateHomePotentialField(self, x, y):
-        return generatePotentialField(x, y, [self.homeBaseCenter], self.obstacles)
+    def generate_home_potential_field(self, x, y):
+        return generate_potential_field(x, y, [self.home_base_center], self.obstacles)
 
     ####################################################################
     ####################################################################
-    def sendToCaptureFlag(self, tank, time_diff):
-        self.Kp = 0.60
-        self.Kd = 0.50
+    def send_to_capture_flag(self, tank, time_diff):
+        delta_position = generate_potential_field(tank.x, tank.y,
+                                                  self.determined_goals(tank),
+                                                  self.obstacles)
         
-        deltaPosition = generatePotentialField(tank.x, tank.y,
-                                               self.determinedGoals(tank),
-                                               self.obstacles)
+        #print "DPosition: ", delta_position[0],":", delta_position[1]
         
-        #print "DPosition: ", deltaPosition[0],":", deltaPosition[1]
+        new_theta = math.atan2(delta_position[1], delta_position[0])
         
-        newTheta = math.atan2(deltaPosition[1], deltaPosition[0])
+        new_theta = new_theta + 2 * math.pi if new_theta < 0 else new_theta
+        pos_tank_angle = tank.angle + 2 * math.pi if tank.angle < 0 else tank.angle
         
-        newTheta = newTheta + 2 * math.pi if newTheta < 0 else newTheta
-        posTankAngle = tank.angle + 2 * math.pi if tank.angle < 0 else tank.angle
-        
-        error = newTheta - posTankAngle
+        error = new_theta - pos_tank_angle
         
         error = error - 2 * math.pi if error > math.pi else error
         
-        #print "newAngle: ", newTheta, ", tankAngle: ", tank.angle, " Error: ", error
+        #print "newAngle: ", new_theta, ", tankAngle: ", tank.angle, " Error: ", error
         
-        derivative = (error - self.error0[tank.index]) / (time_diff - self.timeSet[tank.index])
+        derivative = (error - self.error0[tank.index]) / (time_diff - self.time_set[tank.index])
       
-        newAngleVelocity = (self.Kp * error) + (self.Kd * derivative)
+        new_angle_velocity = (self.kp * error) + (self.kd * derivative)
         
-        #print newAngleVelocity, " kp: ", (self.Kp * error), " Kd: ", (self.Kd * derivative), " E: ", error, " oE: ", self.error0[tank.index], " timeDiff: ", (time_diff - self.timeSet[tank.index])
+        #print new_angle_velocity, " kp: ", (self.Kp * error), " Kd: ", (self.Kd * derivative), " E: ", error, " oE: ", self.error0[tank.index], " timeDiff: ", (time_diff - self.timeSet[tank.index])
         
-        speed = math.sqrt(math.pow(deltaPosition[0], 2) + math.pow(deltaPosition[1], 2))
+        speed = math.sqrt(math.pow(delta_position[0], 2) + math.pow(delta_position[1], 2))
         
-        tempAngle = math.fabs(newAngleVelocity)
-        if tempAngle >= 1:
+        temp_angle = math.fabs(new_angle_velocity)
+        if temp_angle >= 1:
             speed = 0.0
         else:
-            speed = 1.0 - tempAngle
+            speed = 1.0 - temp_angle
         
-        captureFlagCommand = Command(tank.index, speed, newAngleVelocity, True)
-        self.commands.append(captureFlagCommand)
+        capture_flag_command = Command(tank.index, speed, new_angle_velocity, True)
+        self.commands.append(capture_flag_command)
         
         self.error0[tank.index] = error
-        self.timeSet[tank.index] = time_diff
+        self.time_set[tank.index] = time_diff
         
         return 
 
@@ -304,7 +304,7 @@ class Agent(object):
     ####################################################################
     # Remove my flag from the list.
     ####################################################################
-    def removeMyFlag(self, flags):
+    def remove_my_flag(self, flags):
         temp = None
         for f in flags:
             if f.color == self.constants['team']:
@@ -316,15 +316,15 @@ class Agent(object):
     ####################################################################
     # Return all of the flags in the game save my own.
     ####################################################################
-    def getTargetFlags(self):
-        return self.removeMyFlag(self.bzrc.get_flags())
+    def get_target_flags(self):
+        return self.remove_my_flag(self.bzrc.get_flags())
     
     ####################################################################
     # Make any angle be between +/- pi.
     ####################################################################
-    def printPFields(self):
+    def print_pfields(self):
         obstacles = self.bzrc.get_obstacles()
-        flags = self.getTargetFlags()
+        flags = self.get_target_flags()
         
         #printer = PFPrinter('aFields.gpi')
         #printer.printObstacles(obstacles)        
@@ -340,11 +340,11 @@ class Agent(object):
 
         printer = PFPrinter('homeFields.gpi')
         printer.printObstacles(obstacles)
-        printer.printPotentialFields(lambda x, y: self.generateHomePotentialField(x, y))
+        printer.printPotentialFields(lambda x, y: self.generate_home_potential_field(x, y))
 
         printer = PFPrinter('pFields.gpi')
         printer.printObstacles(obstacles)        
-        printer.printPotentialFields(lambda x, y: generatePotentialField(x, y, flags, obstacles))
+        printer.printPotentialFields(lambda x, y: generate_potential_field(x, y, flags, obstacles))
         
 
 def main():
@@ -382,7 +382,7 @@ if __name__ == '__main__':
         if printMe == "-p":
             bzrc = BZRC(host, int(port))
             agent = Agent(bzrc)
-            agent.printPFields()
+            agent.print_pfields()
             bzrc.close()
             
     else:

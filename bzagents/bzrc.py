@@ -22,7 +22,7 @@ import time
 
 
 class BZRC:
-    """Class handles queries and responses with remote controled tanks."""
+    """Class handles queries and responses with remote controlled tanks."""
 
     def __init__(self, host, port, debug=False):
         """Given a hostname and port number, connect to the RC tanks."""
