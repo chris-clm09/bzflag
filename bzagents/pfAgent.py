@@ -174,7 +174,7 @@ class HomeBaseCenter(object):
 ####################################################################
 ####################################################################
 class Agent(object):
-    """Class handles all command and control logic for a teams tanks."""
+    """Class handles all command and control logic for a team's tanks."""
 
     ####################################################################
     # Constructor
@@ -185,9 +185,10 @@ class Agent(object):
         self.obstacles = self.bzrc.get_obstacles()
         self.commands = []
         self.error0 = 0
+        self.my_flag = self.get_my_flag(bzrc.get_flags())
         self.my_tanks = None
         self.other_tanks = None
-        self.flags = None
+        self.other_flags = None
         self.shots = None
         self.enemies = None
         self.kp = 0.60
@@ -210,8 +211,9 @@ class Agent(object):
         my_tanks, other_tanks, flags, shots = self.bzrc.get_lots_o_stuff()
         
         self.my_tanks = my_tanks
+        self.my_flag = self.get_my_flag(flags)
         self.other_tanks = other_tanks
-        self.flags = self.remove_my_flag(flags)
+        self.other_flags = self.remove_my_flag(flags)
         self.shots = shots
         self.enemies = [tank for tank in other_tanks
                         if tank.color != self.constants['team']]
@@ -230,10 +232,14 @@ class Agent(object):
     ####################################################################
     ####################################################################
     def determined_goals(self, tank):
-        if tank.flag == '-':
-            return self.flags
+        result = self.ignore_flags_we_carry(self.other_flags)
+        if not self.is_our_flag_at_home():
+            result.append(self.my_flag)  # someone moved our flag, retrieving it is a possible goal
+
+        if tank.flag != '-' or len(result) == 0:
+            return [self.home_base_center]  # go home if we have nothing else to do
         else:
-            return [self.home_base_center]
+            return result
 
     def generate_home_potential_field(self, x, y):
         return generate_potential_field(x, y, [self.home_base_center], self.obstacles)
@@ -302,6 +308,15 @@ class Agent(object):
         return angle
 
     ####################################################################
+    # Get my flag from the list.
+    ####################################################################
+    def get_my_flag(self, flags):
+        for f in flags:
+            if f.color == self.constants['team']:
+                return f
+        return None
+
+    ####################################################################
     # Remove my flag from the list.
     ####################################################################
     def remove_my_flag(self, flags):
@@ -312,7 +327,27 @@ class Agent(object):
 
         flags.remove(temp)
         return flags
-    
+
+    ####################################################################
+    # Do not consider the flags we are currently carrying
+    ####################################################################
+    def ignore_flags_we_carry(self, flags):
+        for f in flags:
+            for t in self.my_tanks:
+                if t.flag == f.color:
+                    flags.remove(f)   # concurrency issue?
+        return flags
+
+    ####################################################################
+    # Has our flag been moved from home base?
+    ####################################################################
+    def is_our_flag_at_home(self):
+        x2 = (self.home_base_center.x - self.my_flag.x)**2
+        y2 = (self.home_base_center.y - self.my_flag.y)**2
+        radius = math.fabs(self.home_base.corner3_x - self.home_base.corner1_x) / 2.0
+        dist = math.sqrt(x2+y2)
+        return dist <= radius
+
     ####################################################################
     # Return all of the flags in the game save my own.
     ####################################################################
