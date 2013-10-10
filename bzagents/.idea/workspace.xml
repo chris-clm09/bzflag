@@ -2,8 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="9fb10e6a-e30d-4e8d-80fe-785881a67e3d" name="Default" comment="">
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/bzagents.iml" afterPath="$PROJECT_DIR$/.idea/bzagents.iml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/pfAgent.py" afterPath="$PROJECT_DIR$/pfAgent.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../rungame.sh" afterPath="$PROJECT_DIR$/../rungame.sh" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="bzagents.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -29,8 +30,10 @@
       <file leaf-file-name="pfAgent.py" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/pfAgent.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="227" column="30" selection-start="7362" selection-end="7362" vertical-scroll-proportion="0.525268" vertical-offset="3653" max-vertical-offset="7686">
-              <folding />
+            <state line="135" column="50" selection-start="3911" selection-end="3911" vertical-scroll-proportion="0.4114202" vertical-offset="2149" max-vertical-offset="7398">
+              <folding>
+                <element signature="e#23#33#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -38,7 +41,7 @@
       <file leaf-file-name="bzrc.py" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/bzrc.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="276" column="8" selection-start="8766" selection-end="8766" vertical-scroll-proportion="0.0" vertical-offset="4656" max-vertical-offset="8568">
+            <state line="276" column="8" selection-start="8766" selection-end="8766" vertical-scroll-proportion="0.0" vertical-offset="4968" max-vertical-offset="8658">
               <folding />
             </state>
           </provider>
@@ -69,10 +72,31 @@
     </option>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="-1" />
     <option name="y" value="27" />
-    <option name="width" value="1922" />
+    <option name="width" value="1920" />
     <option name="height" value="1028" />
+  </component>
+  <component name="ProjectInspectionProfilesVisibleTreeState">
+    <entry key="Project Default">
+      <profile-state>
+        <expanded-state>
+          <State>
+            <id />
+          </State>
+          <State>
+            <id>Portability issues</id>
+          </State>
+          <State>
+            <id>Python</id>
+          </State>
+        </expanded-state>
+        <selected-state>
+          <State>
+            <id>Buildout</id>
+          </State>
+        </selected-state>
+      </profile-state>
+    </entry>
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="true">
     <OptionsSetting value="true" id="Add" />
@@ -125,10 +149,10 @@
   </component>
   <component name="PropertiesComponent">
     <property name="options.splitter.main.proportions" value="0.3" />
-    <property name="options.lastSelected" value="preferences.keymap" />
+    <property name="options.lastSelected" value="editor.preferences.appearance" />
     <property name="FullScreen" value="false" />
-    <property name="options.searchVisible" value="true" />
     <property name="options.splitter.details.proportions" value="0.2" />
+    <property name="options.searchVisible" value="true" />
   </component>
   <component name="PyConsoleOptionsProvider">
     <option name="myPythonConsoleState">
@@ -299,23 +323,23 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="-1" y="27" width="1922" height="1028" extended-state="6" />
-    <editor active="true" />
+    <frame x="0" y="27" width="1920" height="1028" extended-state="0" />
+    <editor active="false" />
     <layout>
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="11" side_tool="false" content_ui="tabs" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.21201815" sideWeight="0.49973643" order="5" side_tool="false" content_ui="tabs" />
-      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.22034791" sideWeight="0.78798187" order="2" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.2113864" sideWeight="0.8356009" order="1" side_tool="false" content_ui="combo" />
+      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.22002086" sideWeight="0.78848284" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.21115746" sideWeight="0.78848284" order="1" side_tool="false" content_ui="combo" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="true" content_ui="tabs" />
-      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.21201815" sideWeight="0.5002636" order="2" side_tool="true" content_ui="tabs" />
+      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.21151717" sideWeight="0.5002636" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.21201815" sideWeight="0.49973643" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="SLIDING" type="SLIDING" visible="false" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
@@ -340,8 +364,26 @@
   <component name="editorHistoryManager">
     <entry file="file://$PROJECT_DIR$/pfAgent.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="210" column="8" selection-start="6720" selection-end="6720" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="7146">
+        <state line="227" column="30" selection-start="7362" selection-end="7362" vertical-scroll-proportion="0.0" vertical-offset="4086" max-vertical-offset="7686">
+          <folding>
+            <element signature="e#23#33#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/bzrc.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="276" column="8" selection-start="8766" selection-end="8766" vertical-scroll-proportion="0.0" vertical-offset="4968" max-vertical-offset="8658">
           <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/pfAgent.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="210" column="8" selection-start="6720" selection-end="6720" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="7146">
+          <folding>
+            <element signature="e#23#33#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -355,7 +397,9 @@
     <entry file="file://$PROJECT_DIR$/pfAgent.py">
       <provider selected="true" editor-type-id="text-editor">
         <state line="210" column="8" selection-start="6720" selection-end="6720" vertical-scroll-proportion="0.0" vertical-offset="3551" max-vertical-offset="7146">
-          <folding />
+          <folding>
+            <element signature="e#23#33#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -380,8 +424,10 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/pfAgent.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="227" column="30" selection-start="7362" selection-end="7362" vertical-scroll-proportion="0.525268" vertical-offset="3653" max-vertical-offset="7686">
-          <folding />
+        <state line="135" column="50" selection-start="3911" selection-end="3911" vertical-scroll-proportion="0.4114202" vertical-offset="2149" max-vertical-offset="7398">
+          <folding>
+            <element signature="e#23#33#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>

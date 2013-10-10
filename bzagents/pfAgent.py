@@ -251,8 +251,6 @@ class Agent(object):
                                                   self.determined_goals(tank),
                                                   self.obstacles)
         
-        #print "DPosition: ", delta_position[0],":", delta_position[1]
-        
         new_theta = math.atan2(delta_position[1], delta_position[0])
         
         new_theta = new_theta + 2 * math.pi if new_theta < 0 else new_theta
@@ -262,15 +260,9 @@ class Agent(object):
         
         error = error - 2 * math.pi if error > math.pi else error
         
-        #print "newAngle: ", new_theta, ", tankAngle: ", tank.angle, " Error: ", error
-        
         derivative = (error - self.error0[tank.index]) / (time_diff - self.time_set[tank.index])
       
         new_angle_velocity = (self.kp * error) + (self.kd * derivative)
-        
-        #print new_angle_velocity, " kp: ", (self.Kp * error), " Kd: ", (self.Kd * derivative), " E: ", error, " oE: ", self.error0[tank.index], " timeDiff: ", (time_diff - self.timeSet[tank.index])
-        
-        speed = math.sqrt(math.pow(delta_position[0], 2) + math.pow(delta_position[1], 2))
         
         temp_angle = math.fabs(new_angle_velocity)
         if temp_angle >= 1:
@@ -360,18 +352,6 @@ class Agent(object):
     def print_pfields(self):
         obstacles = self.bzrc.get_obstacles()
         flags = self.get_target_flags()
-        
-        #printer = PFPrinter('aFields.gpi')
-        #printer.printObstacles(obstacles)        
-        #printer.printPotentialFields(lambda x, y: generateAttractiveField(x, y,flags))
-        
-        #printer = PFPrinter('rFields.gpi')
-        #printer.printObstacles(obstacles)        
-        #printer.printPotentialFields(lambda x, y: generateRepulsiveField(x, y, obstacles))
-        
-        #printer = PFPrinter('tFields.gpi')
-        #printer.printObstacles(obstacles)        
-        #printer.printPotentialFields(lambda x, y: generateTangentialFields(x, y, obstacles))
 
         printer = PFPrinter('homeFields.gpi')
         printer.printObstacles(obstacles)
