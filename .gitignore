@@ -4,3 +4,4 @@ BZRFlag.egg-info
 BZRFlag-1.0/
 build/
 dist/
+*.gpi
