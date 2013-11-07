@@ -39,6 +39,8 @@ def init_window(width, height):
     glLoadIdentity()
     #glutMainLoop()
 
-
+if __name__ == '__main__':
+    init_window(100,100)
+    draw_grid()
 
 # vim: et sw=4 sts=4
