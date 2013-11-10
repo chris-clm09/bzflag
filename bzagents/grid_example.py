@@ -11,6 +11,18 @@ import time
 
 grid = None
 
+def reverse_grid_values():
+    global grid
+
+    for r in range(0, len(grid)):
+        for c in range(0, len(grid[r])):
+            grid[r][c] = 1.0 - grid[r][c]
+
+def update_grid(new_grid):
+    global grid
+    grid = numpy.array(new_grid)
+    reverse_grid_values()
+
 def draw_grid():
     # This assumes you are using a numpy array for your grid
     width, height = grid.shape
@@ -18,10 +30,6 @@ def draw_grid():
     glDrawPixels(width, height, GL_LUMINANCE, GL_FLOAT, grid)
     glFlush()
     glutSwapBuffers()
-
-def update_grid(new_grid):
-    global grid
-    grid = numpy.array(new_grid)
 
 def init_window(width, height):
     global window
@@ -38,6 +46,10 @@ def init_window(width, height):
     glMatrixMode(GL_MODELVIEW)
     glLoadIdentity()
 
+
+#========================================================================
+# Comand Line Tests and Run
+#========================================================================
 def reset_grid_with_value(value, square_size):
     initialProb = value
     probability_map = []
@@ -56,7 +68,7 @@ if __name__ == '__main__':
     for i in range(0,10):
         reset_grid_with_value(i/10.0, 800)
         draw_grid()
-        time.sleep(.5)
+        time.sleep(.3)
 
 
     glutMainLoop()
