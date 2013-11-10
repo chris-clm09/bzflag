@@ -7,6 +7,13 @@ import time
 from myPrint import *
 from bzrc import BZRC, Command
 
+###########################Fun Agent Constants############################################
+
+INITAL_WORLD_CELL_PROBABILITY = 0.4
+
+########################END Fun Agent Constants END#######################################
+
+
 ###########################Potential Field Fun############################################
 
 
@@ -203,7 +210,22 @@ class Agent(object):
                                                self.home_base.corner1_y + ((self.home_base.corner3_y - self.home_base.corner1_y) / 2.0))
 
         self.time_set = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-        self.error0 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        self.error0   = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+
+        self.init_world_probablility_map(int(self.constants['worldsize']))
+
+    ####################################################################
+    # Init Probablility Map of the World
+    ####################################################################
+    def init_world_probablility_map(self, square_size):
+        #Should ensure square_size is an int.
+        initialProb = INITAL_WORLD_CELL_PROBABILITY
+        self.probability_map = []
+
+        for r in range(0, square_size):
+            self.probability_map.append([])
+            for c in range(0, square_size):
+                self.probability_map[r].append(initialProb)
 
     ####################################################################
     ####################################################################
@@ -353,13 +375,18 @@ class Agent(object):
         obstacles = self.bzrc.get_obstacles()
         flags = self.get_target_flags()
 
-        printer = PFPrinter('homeFields.gpi')
-        printer.printObstacles(obstacles)
-        printer.printPotentialFields(lambda x, y: self.generate_home_potential_field(x, y))
+        print self.constants
 
-        printer = PFPrinter('pFields.gpi')
-        printer.printObstacles(obstacles)        
-        printer.printPotentialFields(lambda x, y: generate_potential_field(x, y, flags, obstacles))
+        # a = self.bzrc.get_occgrid(1)
+        # print a
+
+        # printer = PFPrinter('homeFields.gpi')
+        # printer.printObstacles(obstacles)
+        # printer.printPotentialFields(lambda x, y: self.generate_home_potential_field(x, y))
+
+        # printer = PFPrinter('pFields.gpi')
+        # printer.printObstacles(obstacles)        
+        # printer.printPotentialFields(lambda x, y: generate_potential_field(x, y, flags, obstacles))
         
 
 def main():

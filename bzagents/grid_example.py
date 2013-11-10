@@ -1,27 +1,27 @@
 #!/usr/bin/env python
 
 import OpenGL
+import numpy
 OpenGL.ERROR_CHECKING = False
 from OpenGL.GL import *
 from OpenGL.GLUT import *
 from OpenGL.GLU import *
 from numpy import zeros
+import time
 
 grid = None
 
 def draw_grid():
     # This assumes you are using a numpy array for your grid
     width, height = grid.shape
-    glRasterPos2f(-1, -1)
+    glRasterPos2f(-1.0, -1.0)
     glDrawPixels(width, height, GL_LUMINANCE, GL_FLOAT, grid)
     glFlush()
     glutSwapBuffers()
 
 def update_grid(new_grid):
     global grid
-    grid = new_grid
-
-
+    grid = numpy.array(new_grid)
 
 def init_window(width, height):
     global window
@@ -37,10 +37,28 @@ def init_window(width, height):
     glLoadIdentity()
     glMatrixMode(GL_MODELVIEW)
     glLoadIdentity()
-    #glutMainLoop()
+
+def reset_grid_with_value(value, square_size):
+    initialProb = value
+    probability_map = []
+
+    for r in range(0, square_size):
+        probability_map.append([])
+        for c in range(0, square_size):
+            probability_map[r].append(initialProb)
+
+    update_grid(probability_map)
 
 if __name__ == '__main__':
-    init_window(100,100)
+    init_window(800,800)
     draw_grid()
+
+    for i in range(0,10):
+        reset_grid_with_value(i/10.0, 800)
+        draw_grid()
+        time.sleep(.5)
+
+
+    glutMainLoop()
 
 # vim: et sw=4 sts=4
