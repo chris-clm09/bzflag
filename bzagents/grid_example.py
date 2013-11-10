@@ -71,6 +71,5 @@ if __name__ == '__main__':
         time.sleep(.3)
 
 
-    glutMainLoop()
 
 # vim: et sw=4 sts=4

@@ -6,6 +6,9 @@ import time
 
 from myPrint import *
 from bzrc import BZRC, Command
+from grid_example import *
+
+import time 
 
 ###########################Fun Agent Constants############################################
 
@@ -213,6 +216,7 @@ class Agent(object):
         self.error0   = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
         self.init_world_probablility_map(int(self.constants['worldsize']))
+        self.init_opengl_window()
 
     ####################################################################
     # Init Probablility Map of the World
@@ -226,6 +230,21 @@ class Agent(object):
             self.probability_map.append([])
             for c in range(0, square_size):
                 self.probability_map[r].append(initialProb)
+
+    ####################################################################
+    # Init opengl window and draw inital probabilies.
+    ####################################################################
+    def init_opengl_window(self):
+        size = int(self.constants['worldsize'])
+        init_window(size, size)
+        self.update_opengl_window()
+
+    ####################################################################
+    # Update opengl window with current probability view.
+    ####################################################################
+    def update_opengl_window(self):
+        update_grid(self.probability_map)
+        draw_grid()
 
     ####################################################################
     ####################################################################
@@ -376,6 +395,7 @@ class Agent(object):
         flags = self.get_target_flags()
 
         print self.constants
+        time.sleep(5)
 
         # a = self.bzrc.get_occgrid(1)
         # print a
