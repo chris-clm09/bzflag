@@ -2,8 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="9fb10e6a-e30d-4e8d-80fe-785881a67e3d" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/common.py" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/tank.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/bzagents.iml" afterPath="$PROJECT_DIR$/.idea/bzagents.iml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/misc.xml" afterPath="$PROJECT_DIR$/.idea/misc.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/pfAgent.py" afterPath="$PROJECT_DIR$/pfAgent.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
@@ -28,21 +28,19 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="pfAgent.py" pinned="false" current="false" current-in-tab="false">
+      <file leaf-file-name="pfAgent.py" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/pfAgent.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="302" column="65" selection-start="10815" selection-end="10815" vertical-scroll-proportion="0.0" vertical-offset="4181" max-vertical-offset="8424">
-              <folding>
-                <element signature="e#23#33#0" expanded="true" />
-              </folding>
+            <state line="240" column="26" selection-start="8089" selection-end="8089" vertical-scroll-proportion="0.23760684" vertical-offset="4001" max-vertical-offset="8244">
+              <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="tank.py" pinned="false" current="true" current-in-tab="true">
+      <file leaf-file-name="tank.py" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/tank.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="24" column="71" selection-start="1194" selection-end="1194" vertical-scroll-proportion="0.62882096" vertical-offset="0" max-vertical-offset="972">
+            <state line="27" column="38" selection-start="1295" selection-end="1295" vertical-scroll-proportion="0.0" vertical-offset="374" max-vertical-offset="972">
               <folding />
             </state>
           </provider>
@@ -51,7 +49,7 @@
       <file leaf-file-name="common.py" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/common.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="10" column="22" selection-start="148" selection-end="148" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="666">
+            <state line="10" column="22" selection-start="148" selection-end="148" vertical-scroll-proportion="0.0" vertical-offset="180" max-vertical-offset="666">
               <folding />
             </state>
           </provider>
@@ -60,7 +58,7 @@
       <file leaf-file-name="bzrc.py" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/bzrc.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="302" column="8" selection-start="9688" selection-end="9688" vertical-scroll-proportion="0.0" vertical-offset="5117" max-vertical-offset="8568">
+            <state line="302" column="8" selection-start="9688" selection-end="9688" vertical-scroll-proportion="0.0" vertical-offset="5436" max-vertical-offset="8658">
               <folding />
             </state>
           </provider>
@@ -88,16 +86,15 @@
         <option value="$PROJECT_DIR$/bzrc.py" />
         <option value="$PROJECT_DIR$/Tank.py" />
         <option value="$PROJECT_DIR$/common.py" />
-        <option value="$PROJECT_DIR$/pfAgent.py" />
         <option value="$PROJECT_DIR$/tank.py" />
+        <option value="$PROJECT_DIR$/pfAgent.py" />
       </list>
     </option>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="-1" />
-    <option name="y" value="27" />
-    <option name="width" value="1922" />
-    <option name="height" value="1054" />
+    <option name="y" value="25" />
+    <option name="width" value="1366" />
+    <option name="height" value="743" />
   </component>
   <component name="ProjectInspectionProfilesVisibleTreeState">
     <entry key="Project Default">
@@ -147,6 +144,7 @@
       <sortByType />
     </navigator>
     <panes>
+      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <PATH>
@@ -167,15 +165,14 @@
           </PATH>
         </subPane>
       </pane>
-      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
     <property name="options.splitter.main.proportions" value="0.3" />
-    <property name="options.lastSelected" value="editor.preferences.appearance" />
+    <property name="options.lastSelected" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
     <property name="FullScreen" value="false" />
-    <property name="options.searchVisible" value="true" />
     <property name="options.splitter.details.proportions" value="0.2" />
+    <property name="options.searchVisible" value="true" />
   </component>
   <component name="PyConsoleOptionsProvider">
     <option name="myPythonConsoleState">
@@ -346,23 +343,23 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="-1" y="27" width="1922" height="1054" extended-state="6" />
+    <frame x="0" y="25" width="1366" height="743" extended-state="6" />
     <editor active="true" />
     <layout>
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="11" side_tool="false" content_ui="tabs" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.21145375" sideWeight="0.49973643" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.21982077" sideWeight="0.78854626" order="2" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.21085925" sideWeight="0.78854626" order="1" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.21083455" sideWeight="0.7894737" order="1" side_tool="false" content_ui="combo" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="true" content_ui="tabs" />
-      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.21145375" sideWeight="0.5002636" order="2" side_tool="true" content_ui="tabs" />
+      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.21052632" sideWeight="0.5002636" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.21145375" sideWeight="0.49973643" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="SLIDING" type="SLIDING" visible="false" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
@@ -385,12 +382,31 @@
     <breakpoint-manager />
   </component>
   <component name="editorHistoryManager">
+    <entry file="file://$PROJECT_DIR$/tank.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="24" column="71" selection-start="1194" selection-end="1194" vertical-scroll-proportion="0.0" vertical-offset="432" max-vertical-offset="972">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/common.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="10" column="22" selection-start="148" selection-end="148" vertical-scroll-proportion="0.0" vertical-offset="180" max-vertical-offset="666">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/bzrc.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="302" column="8" selection-start="9688" selection-end="9688" vertical-scroll-proportion="0.0" vertical-offset="5436" max-vertical-offset="8658">
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/pfAgent.py">
       <provider selected="true" editor-type-id="text-editor">
         <state line="135" column="8" selection-start="3886" selection-end="3886" vertical-scroll-proportion="0.0" vertical-offset="108" max-vertical-offset="7452">
-          <folding>
-            <element signature="e#23#33#0" expanded="true" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
@@ -404,9 +420,7 @@
     <entry file="file://$PROJECT_DIR$/pfAgent.py">
       <provider selected="true" editor-type-id="text-editor">
         <state line="227" column="30" selection-start="7362" selection-end="7362" vertical-scroll-proportion="0.0" vertical-offset="4086" max-vertical-offset="7686">
-          <folding>
-            <element signature="e#23#33#0" expanded="true" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
@@ -420,9 +434,7 @@
     <entry file="file://$PROJECT_DIR$/pfAgent.py">
       <provider selected="true" editor-type-id="text-editor">
         <state line="210" column="8" selection-start="6720" selection-end="6720" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="7146">
-          <folding>
-            <element signature="e#23#33#0" expanded="true" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
@@ -436,9 +448,7 @@
     <entry file="file://$PROJECT_DIR$/pfAgent.py">
       <provider selected="true" editor-type-id="text-editor">
         <state line="210" column="8" selection-start="6720" selection-end="6720" vertical-scroll-proportion="0.0" vertical-offset="3551" max-vertical-offset="7146">
-          <folding>
-            <element signature="e#23#33#0" expanded="true" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
@@ -468,18 +478,16 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/pfAgent.py">
+    <entry file="file://$PROJECT_DIR$/tank.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="302" column="65" selection-start="10815" selection-end="10815" vertical-scroll-proportion="0.0" vertical-offset="4181" max-vertical-offset="8424">
-          <folding>
-            <element signature="e#23#33#0" expanded="true" />
-          </folding>
+        <state line="27" column="38" selection-start="1295" selection-end="1295" vertical-scroll-proportion="0.0" vertical-offset="374" max-vertical-offset="972">
+          <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/tank.py">
+    <entry file="file://$PROJECT_DIR$/pfAgent.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="24" column="71" selection-start="1194" selection-end="1194" vertical-scroll-proportion="0.62882096" vertical-offset="0" max-vertical-offset="972">
+        <state line="240" column="26" selection-start="8089" selection-end="8089" vertical-scroll-proportion="0.23760684" vertical-offset="4001" max-vertical-offset="8244">
           <folding />
         </state>
       </provider>

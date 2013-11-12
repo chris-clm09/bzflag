@@ -238,11 +238,11 @@ class Agent(object):
             self.my_tanks = []
             size = int(self.constants['worldsize'])
             extreme = size / 2
-            mow_width = 100
+            mow_width = 50
             for i in range(num_tanks):
                 j = 0
                 waypoints = []
-                col = -extreme + i * 10
+                col = -extreme + i * mow_width
                 while col < extreme:
                     # vertical lawn mower style exploration
                     top = Point(col, extreme)
