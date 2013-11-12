@@ -5,14 +5,15 @@ import math
 import time
 
 from myPrint import *
+from common import *
+from tank import *
 from bzrc import BZRC, Command
 from grid_example import *
 
-import time 
-
+import time
 ###########################Fun Agent Constants############################################
 
-INITAL_WORLD_CELL_PROBABILITY = 0.4
+INITIAL_WORLD_CELL_PROBABILITY = 0.4
 
 ########################END Fun Agent Constants END#######################################
 
@@ -21,27 +22,10 @@ INITAL_WORLD_CELL_PROBABILITY = 0.4
 
 
 ####################################################################
-# Distance between two points.
-####################################################################
-def distance(x, y, goal):
-    return math.sqrt(((goal.y - y)*(goal.y - y)) + ((goal.x - x)*(goal.x - x)))
-
-
-def distance_points(x, y, xg, yg):
-    return math.sqrt(((yg - y)*(yg - y)) + ((xg - x)*(xg - x)))
-
-
-def sign(a):
-    if a == 0 or a == -0:
-        return 0
-    return a / -a
-
-
-####################################################################
 # Generate a Single Repulsive field.
 ####################################################################
 def generate_a_repulsive_field(x, y, obstacle, make_it_tangent=False, goal=None):
-    r = distance_points(obstacle[0][0],
+    r = distance_coords(obstacle[0][0],
                         obstacle[0][1],
                         obstacle[2][0],
                         obstacle[2][1]) / 2.0
@@ -50,7 +34,7 @@ def generate_a_repulsive_field(x, y, obstacle, make_it_tangent=False, goal=None)
     s = 60.0
     b = 1.0/s
     
-    d = distance_points(x, y, center[0], center[1])
+    d = distance_coords(x, y, center[0], center[1])
     theta = math.atan2(center[1] - y, center[0] - x)
     
     dx = -math.cos(theta)
@@ -66,7 +50,7 @@ def generate_a_repulsive_field(x, y, obstacle, make_it_tangent=False, goal=None)
         dx_r = -math.cos(theta_r)
         dy_r = -math.sin(theta_r)
         
-        if distance_points(x + dx_l, y + dy_l, goal.x, goal.y) < distance_points(x+dx_r, y+dy_r, goal.x, goal.y):
+        if distance_coords(x + dx_l, y + dy_l, goal.x, goal.y) < distance_coords(x+dx_r, y+dy_r, goal.x, goal.y):
             dx = dx_l
             dy = dy_l
         else:
@@ -163,19 +147,19 @@ def generate_tangential_fields(x, y, obstacles, goal):
 ####################################################################
 # Generate the potential field for a given point.
 ####################################################################
-def generate_potential_field(x, y, flags, obstacles):
-    tan = generate_tangential_fields(x, y, obstacles, get_min_goal(x, y, flags))
-    att = generate_attractive_field(x, y, flags)
+def generate_potential_field(x, y, goals, obstacles):
+    tan = generate_tangential_fields(x, y, obstacles, get_min_goal(x, y, goals))
+    att = generate_attractive_field(x, y, goals)
     rep = generate_repulsive_field(x, y, obstacles)
     
     return (tan[0] + att[0] + rep[0],
             tan[1] + att[1] + rep[1])
 
 
-class HomeBaseCenter(object):
-    def __init__(self, x, y):
-        self.x = x
-        self.y = y
+#class HomeBaseCenter(object):
+#    def __init__(self, x, y):
+#        self.x = x
+#        self.y = y
 
 
 ####################################################################
@@ -190,49 +174,51 @@ class Agent(object):
     # Constructor
     ####################################################################
     def __init__(self, bzrc):
+        my_tanks, other_tanks, flags, shots = bzrc.get_lots_o_stuff()
         self.bzrc = bzrc
         self.constants = self.bzrc.get_constants()
         self.obstacles = self.bzrc.get_obstacles()
         self.commands = []
         self.error0 = 0
-        self.my_flag = self.get_my_flag(bzrc.get_flags())
+        #self.my_flag = self.get_my_flag(flags)
         self.my_tanks = None
-        self.other_tanks = None
-        self.other_flags = None
-        self.shots = None
-        self.enemies = None
+        self.update_my_tanks(my_tanks)
+        #self.other_flags = None
+        #self.shots = shots
+        #self.enemies = None
         self.kp = 0.60
         self.kd = 0.50
+        self.probability_map = None
         
         bases = self.bzrc.get_bases()
         for base in bases:
             if base.color == self.constants['team']:
                 self.home_base = base
         
-        self.home_base_center = HomeBaseCenter(self.home_base.corner1_x + ((self.home_base.corner3_x - self.home_base.corner1_x) / 2.0),
-                                               self.home_base.corner1_y + ((self.home_base.corner3_y - self.home_base.corner1_y) / 2.0))
+        self.home_base_center = Point(self.home_base.corner1_x + ((self.home_base.corner3_x - self.home_base.corner1_x) / 2.0),
+                                      self.home_base.corner1_y + ((self.home_base.corner3_y - self.home_base.corner1_y) / 2.0))
 
         self.time_set = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-        self.error0   = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        self.error0 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
-        self.init_world_probablility_map(int(self.constants['worldsize']))
+        self.init_world_probability_map(int(self.constants['worldsize']))
         self.init_opengl_window()
 
     ####################################################################
-    # Init Probablility Map of the World
+    # Init Probability Map of the World
     ####################################################################
-    def init_world_probablility_map(self, square_size):
+    def init_world_probability_map(self, square_size):
         #Should ensure square_size is an int.
-        initialProb = INITAL_WORLD_CELL_PROBABILITY
+        initial_probability = INITIAL_WORLD_CELL_PROBABILITY
         self.probability_map = []
 
         for r in range(0, square_size):
             self.probability_map.append([])
             for c in range(0, square_size):
-                self.probability_map[r].append(initialProb)
+                self.probability_map[r].append(initial_probability)
 
     ####################################################################
-    # Init opengl window and draw inital probabilies.
+    # Init opengl window and draw initial probabilities.
     ####################################################################
     def init_opengl_window(self):
         size = int(self.constants['worldsize'])
@@ -246,52 +232,76 @@ class Agent(object):
         update_grid(self.probability_map)
         draw_grid()
 
+    def update_my_tanks(self, bzrc_answers):
+        num_tanks = len(bzrc_answers)
+        if self.my_tanks is None:  # initialize Tanks
+            self.my_tanks = []
+            size = int(self.constants['worldsize'])
+            extreme = size / 2
+            mow_width = 100
+            for i in range(num_tanks):
+                j = 0
+                waypoints = []
+                col = -extreme + i * 10
+                while col < extreme:
+                    # vertical lawn mower style exploration
+                    top = Point(col, extreme)
+                    bot = Point(col, -extreme)
+                    waypoints.append(top)
+                    waypoints.append(bot)
+                    col += num_tanks*mow_width
+                self.my_tanks.append(Tank(waypoints))
+
+        # update tank states
+        for i in range(num_tanks):
+            self.my_tanks[i].update_state(bzrc_answers[i])
+
     ####################################################################
     ####################################################################
     def tick(self, time_diff):
-        my_tanks, other_tanks, flags, shots = self.bzrc.get_lots_o_stuff()
+        #my_tanks, other_tanks, flags, shots = self.bzrc.get_lots_o_stuff()
         
-        self.my_tanks = my_tanks
-        self.my_flag = self.get_my_flag(flags)
-        self.other_tanks = other_tanks
-        self.other_flags = self.remove_my_flag(flags)
-        self.shots = shots
-        self.enemies = [tank for tank in other_tanks
-                        if tank.color != self.constants['team']]
+        self.update_my_tanks(self.bzrc.get_mytanks())
+        #self.my_flag = self.get_my_flag(flags)
+        #self.other_tanks = other_tanks
+        #self.other_flags = self.remove_my_flag(flags)
+        #self.shots = shots
+        #self.enemies = [tank for tank in other_tanks
+        #                if tank.color != self.constants['team']]
 
         #Clear Commands
         self.commands = []
 
-        for tank in my_tanks:
-            #if tank.index == 0:
-            #    self.sendToCaptureFlag(tank, time_diff)
-            self.send_to_capture_flag(tank, time_diff)
-            #self.attack_enemies(tank)
+        for tank in self.my_tanks:
+            self.generate_commands_from_tank(tank, time_diff)
+
+        #self.generate_commands_from_tank(self.my_tanks[0], time_diff)
 
         results = self.bzrc.do_commands(self.commands)
 
     ####################################################################
     ####################################################################
-    def determined_goals(self, tank):
-        result = self.ignore_flags_we_carry(self.other_flags)
-        if not self.is_our_flag_at_home():
-            result.append(self.my_flag)  # someone moved our flag, retrieving it is a possible goal
-
-        if tank.flag != '-' or len(result) == 0:
-            return [self.home_base_center]  # go home if we have nothing else to do
-        else:
-            return result
+    #def determined_goals(self, tank):
+    #    result = self.ignore_flags_we_carry(self.other_flags)
+    #    if not self.is_our_flag_at_home():
+    #        result.append(self.my_flag)  # someone moved our flag, retrieving it is a possible goal
+    #
+    #    if tank.flag != '-' or len(result) == 0:
+    #        return [self.home_base_center]  # go home if we have nothing else to do
+    #    else:
+    #        return result
 
     def generate_home_potential_field(self, x, y):
         return generate_potential_field(x, y, [self.home_base_center], self.obstacles)
 
     ####################################################################
     ####################################################################
-    def send_to_capture_flag(self, tank, time_diff):
+    def generate_commands_from_tank(self, tank, time_diff):
         delta_position = generate_potential_field(tank.x, tank.y,
-                                                  self.determined_goals(tank),
+                                                  #self.determined_goals(tank),
+                                                  [tank.get_waypoint()],
                                                   self.obstacles)
-        
+
         new_theta = math.atan2(delta_position[1], delta_position[0])
         
         new_theta = new_theta + 2 * math.pi if new_theta < 0 else new_theta
