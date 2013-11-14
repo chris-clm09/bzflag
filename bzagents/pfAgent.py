@@ -30,7 +30,7 @@ def generate_a_repulsive_field(x, y, obstacle, make_it_tangent=False, goal=None)
                         obstacle[2][1]) / 2.0
     center = (obstacle[0][0] + ((obstacle[2][0] - obstacle[0][0]) / 2.0),
               obstacle[0][1] + ((obstacle[2][1] - obstacle[0][1]) / 2.0))
-    s = 60.0
+    s = 50.0
     b = 1.0/s
     
     d = distance_coords(x, y, center[0], center[1])
@@ -40,6 +40,8 @@ def generate_a_repulsive_field(x, y, obstacle, make_it_tangent=False, goal=None)
     dy = -math.sin(theta)
     
     if make_it_tangent:
+        s = s + 10
+
         theta_l = theta - (math.pi / 2.0)
         theta_r = theta + (math.pi / 2.0)
         
@@ -286,8 +288,8 @@ class Agent(object):
         #Clear Commands
         self.commands = []
 
-        tanks = self.my_tanks
-        tanks = [self.my_tanks[5]]
+        # tanks = self.my_tanks
+        tanks = [self.my_tanks[3], self.my_tanks[4], self.my_tanks[5]]
 
         #MOVE EACH TANK
         for tank in tanks:
@@ -330,7 +332,7 @@ class Agent(object):
             for r in range(0,len(grid)):
                 for c in range(0, len(grid[0])):
                     
-                    temp_pos = (pos[0] + r, pos[1] + c)
+                    temp_pos = (pos[0] + c, pos[1] + r)
                     temp_pos = self.getMeRasterXandYFromWorldPos(temp_pos)
                     
                     the_observation = int(grid[r][c])
@@ -344,6 +346,10 @@ class Agent(object):
     # probability given the observation.
     ####################################################################
     def updateProbabilityInRasterGivenObj(self, pos, obs):
+
+        if pos[0] >= len(self.probability_map) or pos[1] >= len(self.probability_map[0]):
+            print "Attempted update out of bounds: ", pos
+            return
 
         p_something_there = None
         p_nothings_there  = None
@@ -374,8 +380,8 @@ class Agent(object):
     # Returns raster coordinantes given world coordinants.
     ####################################################################
     def getMeRasterXandYFromWorldPos(self, pos):
-        return (self.half_of_square + pos[0],
-                self.half_of_square - pos[1])
+        return (self.half_of_square - pos[1],
+                self.half_of_square + pos[0])
 
     ####################################################################
     ####################################################################
