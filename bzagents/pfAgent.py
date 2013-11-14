@@ -298,6 +298,8 @@ class Agent(object):
         #PERFORM OBSERVATION FROM EACH TANK
         self.performObservationForEachTankInTanks(tanks)
 
+        self.update_opengl_window()
+
     ####################################################################
     # This function will query the server for what each tank can see.
     ####################################################################
@@ -310,6 +312,7 @@ class Agent(object):
             pos, grid = self.bzrc.get_occgrid(tank.index)
             obs.append((pos, grid))
 
+        self.updateRasterGivenObservations(obs)        
         return
 
     ####################################################################
@@ -324,8 +327,8 @@ class Agent(object):
             grid = o[1]
 
             #Process each cell in a tanks view range(occgrid)
-            for r in range(0,len(grid[0])):
-                for c in range(0, len(grid)):
+            for r in range(0,len(grid)):
+                for c in range(0, len(grid[0])):
                     
                     temp_pos = (pos[0] + r, pos[1] + c)
                     temp_pos = self.getMeRasterXandYFromWorldPos(temp_pos)
@@ -342,14 +345,28 @@ class Agent(object):
     ####################################################################
     def updateProbabilityInRasterGivenObj(self, pos, obs):
 
+        p_something_there = None
+        p_nothings_there  = None
+
+        current_probability = self.probability_map[pos[0]][pos[1]]
+
         if obs == 1:
-            print ""
+            p_something_there = self.true_positive  * current_probability
+            p_nothings_there  = self.false_positive * current_probability
         elif obs == 0:
-            print ""
+            p_something_there = self.false_negative * current_probability
+            p_nothings_there  = self.true_negative  * current_probability
         else:
             print "\n\tupdateProbabilityInRasterGivenObj:",\
                   "Wow! What in Sam Hill did you observe!\n",\
                   self, pos, obs
+            return
+
+        n = p_something_there + p_nothings_there
+        if n > 0:
+            p_something_there = p_something_there / n
+
+        self.probability_map[pos[0]][pos[1]] = p_something_there
 
         return
 
