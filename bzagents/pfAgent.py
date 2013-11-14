@@ -177,6 +177,7 @@ class Agent(object):
         self.bzrc = bzrc
         self.constants = self.bzrc.get_constants()
         self.obstacles = self.bzrc.get_obstacles()
+
         self.commands = []
         self.error0 = 0
         #self.my_flag = self.get_my_flag(flags)
@@ -185,6 +186,7 @@ class Agent(object):
         #self.other_flags = None
         #self.shots = shots
         #self.enemies = None
+
         self.kp = 0.60
         self.kd = 0.50
         self.probability_map = None
@@ -198,10 +200,21 @@ class Agent(object):
                                       self.home_base.corner1_y + ((self.home_base.corner3_y - self.home_base.corner1_y) / 2.0))
 
         self.time_set = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-        self.error0 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        self.error0   = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
         self.init_world_probability_map(int(self.constants['worldsize']))
         self.init_opengl_window()
+
+        self.init_observer_sensor_probabilities()
+
+    ####################################################################
+    # Init observer sensor probabilities.
+    ####################################################################
+    def init_observer_sensor_probabilities(self):
+        self.true_positive  = float(self.constants['truepositive'])
+        self.true_negative  = float(self.constants['truenegative'])
+        self.false_positive = 1.0 - self.true_positive
+        self.false_negative = 1.0 - self.true_negative
 
     ####################################################################
     # Init Probability Map of the World
@@ -215,6 +228,8 @@ class Agent(object):
             self.probability_map.append([])
             for c in range(0, square_size):
                 self.probability_map[r].append(initial_probability)
+
+        self.half_of_square = square_size / 2
 
     ####################################################################
     # Init opengl window and draw initial probabilities.
@@ -271,12 +286,79 @@ class Agent(object):
         #Clear Commands
         self.commands = []
 
-        for tank in self.my_tanks:
+        tanks = self.my_tanks
+        tanks = [self.my_tanks[5]]
+
+        #MOVE EACH TANK
+        for tank in tanks:
             self.generate_commands_from_tank(tank, time_diff)
 
-        #self.generate_commands_from_tank(self.my_tanks[0], time_diff)
-
         results = self.bzrc.do_commands(self.commands)
+
+        #PERFORM OBSERVATION FROM EACH TANK
+        self.performObservationForEachTankInTanks(tanks)
+
+    ####################################################################
+    # This function will query the server for what each tank can see.
+    ####################################################################
+    def performObservationForEachTankInTanks(self, tanks):
+
+        obs = []
+
+        #Perform observation commands
+        for tank in tanks:
+            pos, grid = self.bzrc.get_occgrid(tank.index)
+            obs.append((pos, grid))
+
+        return
+
+    ####################################################################
+    # This function will interpret and add each observation to the
+    # world map.
+    ####################################################################
+    def updateRasterGivenObservations(self, obs):
+
+        #Process each Observation (tank)
+        for o in obs:
+            pos  = o[0]
+            grid = o[1]
+
+            #Process each cell in a tanks view range(occgrid)
+            for r in range(0,len(grid[0])):
+                for c in range(0, len(grid)):
+                    
+                    temp_pos = (pos[0] + r, pos[1] + c)
+                    temp_pos = self.getMeRasterXandYFromWorldPos(temp_pos)
+                    
+                    the_observation = int(grid[r][c])
+
+                    self.updateProbabilityInRasterGivenObj(temp_pos, the_observation)
+
+        return
+
+    ####################################################################
+    # This function will take an observation and update the raster
+    # probability given the observation.
+    ####################################################################
+    def updateProbabilityInRasterGivenObj(self, pos, obs):
+
+        if obs == 1:
+            print ""
+        elif obs == 0:
+            print ""
+        else:
+            print "\n\tupdateProbabilityInRasterGivenObj:",\
+                  "Wow! What in Sam Hill did you observe!\n",\
+                  self, pos, obs
+
+        return
+
+    ####################################################################
+    # Returns raster coordinantes given world coordinants.
+    ####################################################################
+    def getMeRasterXandYFromWorldPos(self, pos):
+        return (self.half_of_square + pos[0],
+                self.half_of_square - pos[1])
 
     ####################################################################
     ####################################################################
