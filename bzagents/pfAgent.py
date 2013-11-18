@@ -24,13 +24,9 @@ INITIAL_WORLD_CELL_PROBABILITY = 0.4
 # Generate a Single Repulsive field.
 ####################################################################
 def generate_a_repulsive_field(x, y, obstacle, make_it_tangent=False, goal=None):
-    r = distance_coords(obstacle[0][0],
-                        obstacle[0][1],
-                        obstacle[2][0],
-                        obstacle[2][1]) / 2.0
-    center = (obstacle[0][0] + ((obstacle[2][0] - obstacle[0][0]) / 2.0),
-              obstacle[0][1] + ((obstacle[2][1] - obstacle[0][1]) / 2.0))
-    s = 50.0
+    r = 3
+    center = obstacle
+    s = 10.0
     b = 1.0/s
     
     d = distance_coords(x, y, center[0], center[1])
@@ -41,6 +37,7 @@ def generate_a_repulsive_field(x, y, obstacle, make_it_tangent=False, goal=None)
     
     if make_it_tangent:
         s = s + 10
+        b = 1.0 / s
 
         theta_l = theta - (math.pi / 2.0)
         theta_r = theta + (math.pi / 2.0)
@@ -156,11 +153,16 @@ def generate_potential_field(x, y, goals, obstacles):
     return (tan[0] + att[0] + rep[0],
             tan[1] + att[1] + rep[1])
 
+class HomeBaseCenter(object):
+   def __init__(self, x, y):
+       self.x = x
+       self.y = y
 
-#class HomeBaseCenter(object):
-#    def __init__(self, x, y):
-#        self.x = x
-#        self.y = y
+def generate_rep_field(x,y,obstacles):
+    tan = generate_tangential_fields(x,y,obstacles,HomeBaseCenter(0,0))
+    rep = generate_repulsive_field(x,y,obstacles)
+    return (tan[0] + rep[0],
+            tan[1] + rep[1])
 
 
 ####################################################################
@@ -178,7 +180,7 @@ class Agent(object):
         my_tanks, other_tanks, flags, shots = bzrc.get_lots_o_stuff()
         self.bzrc = bzrc
         self.constants = self.bzrc.get_constants()
-        self.obstacles = self.bzrc.get_obstacles()
+        self.obstacles = []
 
         self.commands = []
         self.error0 = 0
@@ -332,12 +334,15 @@ class Agent(object):
             for r in range(0,len(grid)):
                 for c in range(0, len(grid[0])):
                     
-                    temp_pos = (pos[0] + r, pos[1] + c)
-                    temp_pos = self.getMeRasterXandYFromWorldPos(temp_pos)
+                    temp_pos_wp     = (pos[0] + r, pos[1] + c)
+                    temp_pos_raster = self.getMeRasterXandYFromWorldPos(temp_pos_wp)
                     
                     the_observation = int(grid[r][c])
 
-                    self.updateProbabilityInRasterGivenObj(temp_pos, the_observation)
+                    self.updateProbabilityInRasterGivenObj(
+                        temp_pos_wp,
+                        temp_pos_raster, 
+                        the_observation)
 
         return
 
@@ -345,7 +350,7 @@ class Agent(object):
     # This function will take an observation and update the raster
     # probability given the observation.
     ####################################################################
-    def updateProbabilityInRasterGivenObj(self, pos, obs):
+    def updateProbabilityInRasterGivenObj(self, wp, pos, obs):
 
         x = pos[0]
         y = pos[1]
@@ -375,9 +380,36 @@ class Agent(object):
         if n > 0:
             p_something_there = p_something_there / n
             self.probability_map[y][x] = p_something_there
+            self.add_obsticle_if_needed(wp,x,y,p_something_there)
 
         return
 
+    ####################################################################
+    # Sets a point as an obsticle given a high enough p_something_there
+    # and if 50% of his neighbors are obsticles.
+    ####################################################################
+    def add_obsticle_if_needed(self, wp, x, y, p_something_there):
+        if p_something_there >= .94 and self.might_be_obsticle(x,y):
+            if not wp in self.obstacles:
+                self.obstacles.append(wp)
+                print "Ob. Add:", wp, (x,y)
+
+    ####################################################################
+    # Returns true if 50% of a points neighbors are obsticles.
+    ####################################################################
+    def might_be_obsticle(self, x, y):
+        if x >= len(self.probability_map[0]) or y >= len(self.probability_map):
+            return False
+
+        cnt_of_surrounding_obsticles = 0
+        for xp in range(x-2,x+3):
+            for yp in range (y-2,y+3):
+                if xp < len(self.probability_map[0]) and yp < len(self.probability_map):
+                    if self.probability_map[yp][xp] > .9:
+                        cnt_of_surrounding_obsticles = cnt_of_surrounding_obsticles + 1
+
+        return (cnt_of_surrounding_obsticles / 25.0) >= .7
+       
     ####################################################################
     # Returns raster coordinantes given world coordinants.
     ####################################################################
@@ -507,17 +539,21 @@ class Agent(object):
     # Make any angle be between +/- pi.
     ####################################################################
     def print_pfields(self):
-        obstacles = self.bzrc.get_obstacles()
+        obstacles = self.obstacles #self.bzrc.get_obstacles()
         flags = self.get_target_flags()
 
-        print self.constants
-        time.sleep(5)
+        # print self.constants
+        # time.sleep(5)
 
         # a = self.bzrc.get_occgrid(1)
         # print a
 
+        printer = PFPrinter('repFields.gpi')
+        printer.printObstacles(self.bzrc.get_obstacles())
+        printer.printPotentialFields(lambda x, y: generate_rep_field(x, y, self.obstacles))
+
         # printer = PFPrinter('homeFields.gpi')
-        # printer.printObstacles(obstacles)
+        # # printer.printObstacles(obstacles)
         # printer.printPotentialFields(lambda x, y: self.generate_home_potential_field(x, y))
 
         # printer = PFPrinter('pFields.gpi')
@@ -543,11 +579,23 @@ def main():
 
     prev_time = time.time()
     
+    old_diff = 0
+
     # Run the agent
     try:
         while True:
             time_diff = time.time()
             agent.tick(time_diff)
+            
+            if old_diff == 0:
+                old_diff = time_diff
+            elif time_diff - old_diff > 60:
+                old_diff = time_diff
+                agent.print_pfields()
+                print "TICKY TOCKY"
+                bzrc.close()
+                return
+
     except KeyboardInterrupt:
         print "Exiting due to keyboard interrupt."
     bzrc.close()

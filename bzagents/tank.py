@@ -3,7 +3,7 @@ __author__ = 'scott'
 from common import *
 
 
-WAYPOINT_MET_THRESHOLD = 10                                     # radius around waypoint
+WAYPOINT_MET_THRESHOLD = 25                                     # radius around waypoint
 
 
 class Tank(object):
