@@ -223,7 +223,7 @@ class Agent(object):
     ####################################################################
     def init_world_probability_map(self, square_size):
         #Should ensure square_size is an int.
-        initial_probability = INITIAL_WORLD_CELL_PROBABILITY
+        initial_probability  = INITIAL_WORLD_CELL_PROBABILITY
         self.probability_map = []
 
         for r in range(0, square_size):
@@ -288,8 +288,8 @@ class Agent(object):
         #Clear Commands
         self.commands = []
 
-        # tanks = self.my_tanks
-        tanks = [self.my_tanks[3], self.my_tanks[4], self.my_tanks[5]]
+        tanks = self.my_tanks
+        #tanks = [self.my_tanks[3], self.my_tanks[4], self.my_tanks[5]]
 
         #MOVE EACH TANK
         for tank in tanks:
@@ -332,7 +332,7 @@ class Agent(object):
             for r in range(0,len(grid)):
                 for c in range(0, len(grid[0])):
                     
-                    temp_pos = (pos[0] + c, pos[1] + r)
+                    temp_pos = (pos[0] + r, pos[1] + c)
                     temp_pos = self.getMeRasterXandYFromWorldPos(temp_pos)
                     
                     the_observation = int(grid[r][c])
@@ -347,14 +347,17 @@ class Agent(object):
     ####################################################################
     def updateProbabilityInRasterGivenObj(self, pos, obs):
 
-        if pos[0] >= len(self.probability_map) or pos[1] >= len(self.probability_map[0]):
+        x = pos[0]
+        y = pos[1]
+
+        if x >= len(self.probability_map[0]) or y >= len(self.probability_map):
             print "Attempted update out of bounds: ", pos
             return
 
         p_something_there = None
         p_nothings_there  = None
 
-        current_probability = self.probability_map[pos[0]][pos[1]]
+        current_probability = self.probability_map[y][x]
 
         if obs == 1:
             p_something_there = self.true_positive  * current_probability
@@ -371,8 +374,7 @@ class Agent(object):
         n = p_something_there + p_nothings_there
         if n > 0:
             p_something_there = p_something_there / n
-
-        self.probability_map[pos[0]][pos[1]] = p_something_there
+            self.probability_map[y][x] = p_something_there
 
         return
 
@@ -380,8 +382,8 @@ class Agent(object):
     # Returns raster coordinantes given world coordinants.
     ####################################################################
     def getMeRasterXandYFromWorldPos(self, pos):
-        return (self.half_of_square - pos[1],
-                self.half_of_square + pos[0])
+        return (self.half_of_square + pos[0],
+                self.half_of_square - pos[1])
 
     ####################################################################
     ####################################################################
