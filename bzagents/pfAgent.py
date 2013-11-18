@@ -40,20 +40,20 @@ def generate_a_repulsive_field(x, y, obstacle, make_it_tangent=False, goal=None)
         b = 1.0 / s
 
         theta_l = theta - (math.pi / 2.0)
-        theta_r = theta + (math.pi / 2.0)
+        # theta_r = theta + (math.pi / 2.0)
         
         dx_l = -math.cos(theta_l)
         dy_l = -math.sin(theta_l)
         
-        dx_r = -math.cos(theta_r)
-        dy_r = -math.sin(theta_r)
+        # dx_r = -math.cos(theta_r)
+        # dy_r = -math.sin(theta_r)
         
-        if distance_coords(x + dx_l, y + dy_l, goal.x, goal.y) < distance_coords(x+dx_r, y+dy_r, goal.x, goal.y):
-            dx = dx_l
-            dy = dy_l
-        else:
-            dx = dx_r
-            dy = dy_r
+        # if distance_coords(x + dx_l, y + dy_l, goal.x, goal.y) < distance_coords(x+dx_r, y+dy_r, goal.x, goal.y):
+        dx = dx_l
+        dy = dy_l
+        # else:
+        #     dx = dx_r
+        #     dy = dy_r
 
     temp = None
     if d < r:
@@ -290,8 +290,8 @@ class Agent(object):
         #Clear Commands
         self.commands = []
 
-        tanks = self.my_tanks
-        #tanks = [self.my_tanks[3], self.my_tanks[4], self.my_tanks[5]]
+        # tanks = self.my_tanks
+        tanks = [self.my_tanks[3], self.my_tanks[4], self.my_tanks[5]]
 
         #MOVE EACH TANK
         for tank in tanks:
@@ -587,14 +587,14 @@ def main():
             time_diff = time.time()
             agent.tick(time_diff)
             
-            if old_diff == 0:
-                old_diff = time_diff
-            elif time_diff - old_diff > 60:
-                old_diff = time_diff
-                agent.print_pfields()
-                print "TICKY TOCKY"
-                bzrc.close()
-                return
+            # if old_diff == 0:
+            #     old_diff = time_diff
+            # elif time_diff - old_diff > 60:
+            #     old_diff = time_diff
+            #     agent.print_pfields()
+            #     print "TICKY TOCKY"
+            #     bzrc.close()
+            #     return
 
     except KeyboardInterrupt:
         print "Exiting due to keyboard interrupt."
