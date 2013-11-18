@@ -153,14 +153,10 @@ def generate_potential_field(x, y, goals, obstacles):
     return (tan[0] + att[0] + rep[0],
             tan[1] + att[1] + rep[1])
 
-class HomeBaseCenter(object):
-   def __init__(self, x, y):
-       self.x = x
-       self.y = y
 
-def generate_rep_field(x,y,obstacles):
-    tan = generate_tangential_fields(x,y,obstacles,HomeBaseCenter(0,0))
-    rep = generate_repulsive_field(x,y,obstacles)
+def generate_rep_field(x, y, obstacles):
+    tan = generate_tangential_fields(x, y, obstacles, Point(0, 0))
+    rep = generate_repulsive_field(x, y, obstacles)
     return (tan[0] + rep[0],
             tan[1] + rep[1])
 
@@ -225,7 +221,7 @@ class Agent(object):
     ####################################################################
     def init_world_probability_map(self, square_size):
         #Should ensure square_size is an int.
-        initial_probability  = INITIAL_WORLD_CELL_PROBABILITY
+        initial_probability = INITIAL_WORLD_CELL_PROBABILITY
         self.probability_map = []
 
         for r in range(0, square_size):
@@ -300,14 +296,14 @@ class Agent(object):
         results = self.bzrc.do_commands(self.commands)
 
         #PERFORM OBSERVATION FROM EACH TANK
-        self.performObservationForEachTankInTanks(tanks)
+        self.perform_observation_for_each_tank(tanks)
 
         self.update_opengl_window()
 
     ####################################################################
     # This function will query the server for what each tank can see.
     ####################################################################
-    def performObservationForEachTankInTanks(self, tanks):
+    def perform_observation_for_each_tank(self, tanks):
 
         obs = []
 
@@ -316,14 +312,14 @@ class Agent(object):
             pos, grid = self.bzrc.get_occgrid(tank.index)
             obs.append((pos, grid))
 
-        self.updateRasterGivenObservations(obs)        
+        self.update_raster_given_observations(obs)
         return
 
     ####################################################################
     # This function will interpret and add each observation to the
     # world map.
     ####################################################################
-    def updateRasterGivenObservations(self, obs):
+    def update_raster_given_observations(self, obs):
 
         #Process each Observation (tank)
         for o in obs:
@@ -331,15 +327,15 @@ class Agent(object):
             grid = o[1]
 
             #Process each cell in a tanks view range(occgrid)
-            for r in range(0,len(grid)):
+            for r in range(0, len(grid)):
                 for c in range(0, len(grid[0])):
                     
                     temp_pos_wp     = (pos[0] + r, pos[1] + c)
-                    temp_pos_raster = self.getMeRasterXandYFromWorldPos(temp_pos_wp)
+                    temp_pos_raster = self.get_me_raster_x_and_y_from_world_pos(temp_pos_wp)
                     
                     the_observation = int(grid[r][c])
 
-                    self.updateProbabilityInRasterGivenObj(
+                    self.update_probability_in_raster_given_obj(
                         temp_pos_wp,
                         temp_pos_raster, 
                         the_observation)
@@ -350,7 +346,7 @@ class Agent(object):
     # This function will take an observation and update the raster
     # probability given the observation.
     ####################################################################
-    def updateProbabilityInRasterGivenObj(self, wp, pos, obs):
+    def update_probability_in_raster_given_obj(self, wp, pos, obs):
 
         x = pos[0]
         y = pos[1]
@@ -378,42 +374,42 @@ class Agent(object):
 
         n = p_something_there + p_nothings_there
         if n > 0:
-            p_something_there = p_something_there / n
+            p_something_there /= n
             self.probability_map[y][x] = p_something_there
-            self.add_obsticle_if_needed(wp,x,y,p_something_there)
+            self.add_obstacle_if_needed(wp, x, y, p_something_there)
 
         return
 
     ####################################################################
-    # Sets a point as an obsticle given a high enough p_something_there
-    # and if 50% of his neighbors are obsticles.
+    # Sets a point as an obstacle given a high enough p_something_there
+    # and if 50% of his neighbors are obstacles.
     ####################################################################
-    def add_obsticle_if_needed(self, wp, x, y, p_something_there):
-        if p_something_there >= .94 and self.might_be_obsticle(x,y):
+    def add_obstacle_if_needed(self, wp, x, y, p_something_there):
+        if p_something_there >= .94 and self.might_be_obstacle(x, y):
             if not wp in self.obstacles:
                 self.obstacles.append(wp)
                 print "Ob. Add:", wp, (x,y)
 
     ####################################################################
-    # Returns true if 50% of a points neighbors are obsticles.
+    # Returns true if 50% of a points neighbors are obstacles.
     ####################################################################
-    def might_be_obsticle(self, x, y):
+    def might_be_obstacle(self, x, y):
         if x >= len(self.probability_map[0]) or y >= len(self.probability_map):
             return False
 
-        cnt_of_surrounding_obsticles = 0
-        for xp in range(x-2,x+3):
-            for yp in range (y-2,y+3):
+        cnt_of_surrounding_obstacles = 0
+        for xp in range(x-2, x+3):
+            for yp in range(y-2, y+3):
                 if xp < len(self.probability_map[0]) and yp < len(self.probability_map):
                     if self.probability_map[yp][xp] > .9:
-                        cnt_of_surrounding_obsticles = cnt_of_surrounding_obsticles + 1
+                        cnt_of_surrounding_obstacles += 1
 
-        return (cnt_of_surrounding_obsticles / 25.0) >= .7
+        return (cnt_of_surrounding_obstacles / 25.0) >= .7
        
     ####################################################################
-    # Returns raster coordinantes given world coordinants.
+    # Returns raster coordinates given world coordinates.
     ####################################################################
-    def getMeRasterXandYFromWorldPos(self, pos):
+    def get_me_raster_x_and_y_from_world_pos(self, pos):
         return (self.half_of_square + pos[0],
                 self.half_of_square - pos[1])
 

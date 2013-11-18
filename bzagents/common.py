@@ -11,6 +11,16 @@ class Point(object):
     def __str__(self):
         return "(" + str(self.x) + ", " + str(self.y) + ")"
 
+
+class Circle(object):
+    def __init__(self, x, y, radius):
+        self.center = Point(x, y)
+        self.radius = radius
+
+    def __str__(self):
+        return "Obstacle at " + str(self.center) + " with radius = " + str(self.radius)
+
+
 ####################################################################
 # Distance between two points.
 ####################################################################
