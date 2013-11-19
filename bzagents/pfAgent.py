@@ -36,7 +36,7 @@ def generate_a_repulsive_field(x, y, obstacle, make_it_tangent=False, goal=None)
     dy = -math.sin(theta)
     
     if make_it_tangent:
-        s = s + 10
+        s = s + 5
         b = 1.0 / s
 
         theta_l = theta - (math.pi / 2.0)
@@ -286,8 +286,8 @@ class Agent(object):
         #Clear Commands
         self.commands = []
 
-        tanks = self.my_tanks
-        # tanks = [self.my_tanks[3], self.my_tanks[4], self.my_tanks[5]]
+        # tanks = self.my_tanks
+        tanks = [self.my_tanks[3], self.my_tanks[4], self.my_tanks[5]]
 
         #MOVE EACH TANK
         for tank in tanks:
@@ -386,9 +386,18 @@ class Agent(object):
     ####################################################################
     def add_obstacle_if_needed(self, wp, x, y, p_something_there):
         if p_something_there >= .94 and self.might_be_obstacle(x, y):
-            if not wp in self.obstacles:
-                self.obstacles.append(wp)
-                print "Ob. Add:", wp, (x,y)
+            
+            #if any obsticle is within this new point(wp)'s grid
+            #don't add it to the obsticle list.
+            for pt in self.obstacles:
+                if pt[0] >= wp[0] - 7 and pt[0] <= wp[0] + 7 and \
+                   pt[1] >= wp[1] - 7 and pt[1] <= wp[1] + 7:
+                   print "Skipping"
+                   return
+
+            # if not wp in self.obstacles:
+            self.obstacles.append(wp)
+            print "Ob. Add:", wp, (x,y), len(self.obstacles)
 
     ####################################################################
     # Returns true if 50% of a points neighbors are obstacles.
