@@ -180,6 +180,7 @@ class Agent(object):
         #self.my_flag = self.get_my_flag(flags)
         self.my_tanks = None
         self.start = True
+        self.num_tanks = len(my_tanks)
         self.update_my_tanks(my_tanks)
         #self.other_flags = None
         #self.shots = shots
@@ -245,12 +246,12 @@ class Agent(object):
         draw_grid()
 
     def update_my_tanks(self, bzrc_answers):
-        num_tanks = len(bzrc_answers)
+        num_tanks = min(3,len(bzrc_answers))
         if self.my_tanks is None:  # initialize Tanks
             self.my_tanks = []
             size = int(self.constants['worldsize'])
             extreme = size / 2
-            mow_width = 50
+            mow_width = 80
             for i in range(num_tanks):
                 j = 0
                 waypoints = []
@@ -268,6 +269,14 @@ class Agent(object):
         for i in range(num_tanks):
             self.my_tanks[i].update_state(bzrc_answers[i])
 
+    def getTanksMoving(self):
+        self.commands = []
+        for i in range(0, self.num_tanks):
+            self.commands.append(Command(i, 1.0, 1.0, True))
+        self.bzrc.do_commands(self.commands)
+        return
+
+
     ####################################################################
     ####################################################################
     def tick(self, time_diff):
@@ -284,10 +293,12 @@ class Agent(object):
         self.commands = []
 
         if self.start == True:
-            tanks = self.my_tanks
+            self.getTanksMoving()
             self.start = False
+            return
         else:
-            tanks = [self.my_tanks[3], self.my_tanks[4], self.my_tanks[5], self.my_tanks[0], self.my_tanks[8]]
+            # tanks = [self.my_tanks[3], self.my_tanks[4], self.my_tanks[5], self.my_tanks[0], self.my_tanks[8]]
+            tanks = self.my_tanks
 
         #MOVE EACH TANK
         for tank in tanks:
@@ -595,15 +606,15 @@ def main():
             time_diff = time.time()
             agent.tick(time_diff)
             
-            if old_diff == 0:
-                old_diff = time_diff
-            elif time_diff - old_diff > 180:
-                old_diff = time_diff
-                agent.print_pfields()
-                print "TICKY TOCKY"
-                print agent.obstacles
-                bzrc.close()
-                return
+            # if old_diff == 0:
+            #     old_diff = time_diff
+            # elif time_diff - old_diff > 180:
+            #     old_diff = time_diff
+            #     agent.print_pfields()
+            #     print "TICKY TOCKY"
+            #     print agent.obstacles
+            #     bzrc.close()
+            #     return
 
     except KeyboardInterrupt:
         print "Exiting due to keyboard interrupt."
