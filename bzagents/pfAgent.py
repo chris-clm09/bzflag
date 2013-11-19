@@ -312,14 +312,14 @@ class Agent(object):
             pos, grid = self.bzrc.get_occgrid(tank.index)
             obs.append((pos, grid))
 
-        self.update_raster_given_observations(obs)
+        self.update_given_observations(obs)
         return
 
     ####################################################################
     # This function will interpret and add each observation to the
     # world map.
     ####################################################################
-    def update_raster_given_observations(self, obs):
+    def update_given_observations(self, obs):
 
         #Process each Observation (tank)
         for o in obs:
@@ -335,7 +335,7 @@ class Agent(object):
                     
                     the_observation = int(grid[r][c])
 
-                    self.update_probability_in_raster_given_obj(
+                    self.update_given_obs(
                         temp_pos_wp,
                         temp_pos_raster, 
                         the_observation)
@@ -346,7 +346,7 @@ class Agent(object):
     # This function will take an observation and update the raster
     # probability given the observation.
     ####################################################################
-    def update_probability_in_raster_given_obj(self, wp, pos, obs):
+    def update_given_obs(self, wp, pos, obs):
 
         x = pos[0]
         y = pos[1]
