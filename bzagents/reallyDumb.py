@@ -55,7 +55,7 @@ class Agent(object):
         
         for tank in self.mytanks:
             self.moveForwardOrTurn(tank)
-            self.randomShoot(tank)
+            # self.randomShoot(tank)
 
         results = self.bzrc.do_commands(self.commands)
 

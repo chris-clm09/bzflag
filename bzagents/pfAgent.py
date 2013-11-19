@@ -24,9 +24,9 @@ INITIAL_WORLD_CELL_PROBABILITY = 0.4
 # Generate a Single Repulsive field.
 ####################################################################
 def generate_a_repulsive_field(x, y, obstacle, make_it_tangent=False, goal=None):
-    r = 20
+    r = 15
     center = obstacle
-    s = 40.0
+    s = 30.0
     b = 1.0/s
     
     d = distance_coords(x, y, center[0], center[1])
