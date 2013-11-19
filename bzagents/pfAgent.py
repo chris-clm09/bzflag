@@ -24,9 +24,9 @@ INITIAL_WORLD_CELL_PROBABILITY = 0.4
 # Generate a Single Repulsive field.
 ####################################################################
 def generate_a_repulsive_field(x, y, obstacle, make_it_tangent=False, goal=None):
-    r = 3
+    r = 20
     center = obstacle
-    s = 10.0
+    s = 40.0
     b = 1.0/s
     
     d = distance_coords(x, y, center[0], center[1])
@@ -36,24 +36,21 @@ def generate_a_repulsive_field(x, y, obstacle, make_it_tangent=False, goal=None)
     dy = -math.sin(theta)
     
     if make_it_tangent:
-        s = s + 5
-        b = 1.0 / s
-
-        theta_l = theta - (math.pi / 2.0)
-        # theta_r = theta + (math.pi / 2.0)
+        # theta_l = theta - (math.pi / 2.0)
+        theta_r = theta + (math.pi / 2.0)
         
-        dx_l = -math.cos(theta_l)
-        dy_l = -math.sin(theta_l)
+        # dx_l = -math.cos(theta_l)
+        # dy_l = -math.sin(theta_l)
         
-        # dx_r = -math.cos(theta_r)
-        # dy_r = -math.sin(theta_r)
+        dx_r = -math.cos(theta_r)
+        dy_r = -math.sin(theta_r)
         
         # if distance_coords(x + dx_l, y + dy_l, goal.x, goal.y) < distance_coords(x+dx_r, y+dy_r, goal.x, goal.y):
-        dx = dx_l
-        dy = dy_l
+        #     dx = dx_l
+        #     dy = dy_l
         # else:
-        #     dx = dx_r
-        #     dy = dy_r
+        dx = dx_r
+        dy = dy_r
 
     temp = None
     if d < r:
@@ -182,6 +179,7 @@ class Agent(object):
         self.error0 = 0
         #self.my_flag = self.get_my_flag(flags)
         self.my_tanks = None
+        self.start = True
         self.update_my_tanks(my_tanks)
         #self.other_flags = None
         #self.shots = shots
@@ -274,7 +272,6 @@ class Agent(object):
     ####################################################################
     def tick(self, time_diff):
         #my_tanks, other_tanks, flags, shots = self.bzrc.get_lots_o_stuff()
-        
         self.update_my_tanks(self.bzrc.get_mytanks())
         #self.my_flag = self.get_my_flag(flags)
         #self.other_tanks = other_tanks
@@ -286,8 +283,11 @@ class Agent(object):
         #Clear Commands
         self.commands = []
 
-        tanks = self.my_tanks
-        # tanks = [self.my_tanks[3], self.my_tanks[4], self.my_tanks[5], self.my_tanks[0]]
+        if self.start == True:
+            tanks = self.my_tanks
+            self.start = False
+        else:
+            tanks = [self.my_tanks[3], self.my_tanks[4], self.my_tanks[5], self.my_tanks[0], self.my_tanks[8]]
 
         #MOVE EACH TANK
         for tank in tanks:
@@ -390,9 +390,9 @@ class Agent(object):
             #if any obsticle is within this new point(wp)'s grid
             #don't add it to the obsticle list.
             for pt in self.obstacles:
-                if pt[0] >= wp[0] - 7 and pt[0] <= wp[0] + 7 and \
-                   pt[1] >= wp[1] - 7 and pt[1] <= wp[1] + 7:
-                   print "Skipping"
+                if pt[0] >= wp[0] - 15 and pt[0] <= wp[0] + 15 and \
+                   pt[1] >= wp[1] - 15 and pt[1] <= wp[1] + 15:
+                   # print "Skipping"
                    return
 
             # if not wp in self.obstacles:
@@ -544,8 +544,8 @@ class Agent(object):
     # Make any angle be between +/- pi.
     ####################################################################
     def print_pfields(self):
-        obstacles = self.obstacles #self.bzrc.get_obstacles()
-        flags = self.get_target_flags()
+        # obstacles = self.obstacles #self.bzrc.get_obstacles()
+        # flags = self.get_target_flags()
 
         # print self.constants
         # time.sleep(5)
@@ -555,7 +555,10 @@ class Agent(object):
 
         printer = PFPrinter('repFields.gpi')
         printer.printObstacles(self.bzrc.get_obstacles())
-        printer.printPotentialFields(lambda x, y: generate_rep_field(x, y, self.obstacles))
+        temp = [(-208, 132), (-208, 148), (-192, 132), (-192, 148), (-149, 200), (-133, 200), (-176, 133), (-175, 149), (-160, 133), (-208, 111), (-192, 111), (-176, 112), (-9, 50), (-8, 27), (7, 43), (8, 25), (-117, 199), (-148, 172), (-132, 172), (7, 59), (-209, -102), (-208, -121), (-208, -148), (-9, 7), (-106, -95), (-98, -138), (-98, -122), (-90, -92), (-192, -148), (-192, -132), (-91, -181), (-91, -165), (-192, -116), (-176, -148), (-176, -132), (-160, -148), (-160, -132), (-148, -204), (-148, -188), (-148, -172), (-144, -156), (-144, -140), (-144, -124), (-132, -204), (-132, -188), (-132, -172), (-128, -156), (-128, -140), (-128, -124), (-176, -116), (-160, -116), (-144, -108), (-128, -108), (-116, -203), (-116, -187), (-112, -171), (-112, -155), (-193, -100), (-183, 91), (-167, 91), (-160, 107), (-151, 91), (-144, 107), (-135, 91), (-128, 107), (-119, 91), (-144, 123), (-128, 123), (-112, 107), (-112, 123), (-103, 91), (-96, 107), (-96, 123), (-93, -207), (-9, -55), (7, -58), (7, 1), (-8, -39), (-8, -23), (8, -42), (8, -26), (91, 186), (91, 202), (107, 184), (107, 200), (123, 183), (123, 199), (139, 183), (139, 199), (91, 166), (107, 165), (123, 165), (139, 165), (-104, 139), (91, -120), (91, -104), (91, 91), (91, 107), (91, 123), (107, 91), (107, 107), (90, 148), (106, 139), (107, 123), (123, 91), (123, 107), (123, 123), (139, 91), (139, 107), (155, 91), (155, 107), (122, 139), (171, 91), (171, 107), (139, 123), (155, 123), (187, 91), (187, 107), (171, 123), (187, 123), (203, 91), (203, 107), (203, 123), (107, -125), (107, -109), (107, -93), (123, -124), (123, -108), (123, -92), (91, -138), (123, -140), (207, 139)]
+        printer.printPotentialFields(lambda x, y: generate_rep_field(x, y, temp))
+
+        print "Done Printing"
 
         # printer = PFPrinter('homeFields.gpi')
         # # printer.printObstacles(obstacles)
@@ -592,14 +595,15 @@ def main():
             time_diff = time.time()
             agent.tick(time_diff)
             
-            # if old_diff == 0:
-            #     old_diff = time_diff
-            # elif time_diff - old_diff > 60:
-            #     old_diff = time_diff
-            #     agent.print_pfields()
-            #     print "TICKY TOCKY"
-            #     bzrc.close()
-            #     return
+            if old_diff == 0:
+                old_diff = time_diff
+            elif time_diff - old_diff > 180:
+                old_diff = time_diff
+                agent.print_pfields()
+                print "TICKY TOCKY"
+                print agent.obstacles
+                bzrc.close()
+                return
 
     except KeyboardInterrupt:
         print "Exiting due to keyboard interrupt."
