@@ -286,8 +286,8 @@ class Agent(object):
         #Clear Commands
         self.commands = []
 
-        # tanks = self.my_tanks
-        tanks = [self.my_tanks[3], self.my_tanks[4], self.my_tanks[5]]
+        tanks = self.my_tanks
+        # tanks = [self.my_tanks[3], self.my_tanks[4], self.my_tanks[5], self.my_tanks[0]]
 
         #MOVE EACH TANK
         for tank in tanks:
