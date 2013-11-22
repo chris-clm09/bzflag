@@ -27,48 +27,134 @@ import random
 
 from bzrc import BZRC, Command
 
+class AGoal:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+
+####################################################################
+# Distance between two points.
+####################################################################
+def distance(x, y, goal):
+    return math.sqrt(((goal.y - y)*(goal.y - y)) + ((goal.x - x)*(goal.x - x)))
+
+
+def distance_points(x, y, xg, yg):
+    return math.sqrt(((yg - y)*(yg - y)) + ((xg - x)*(xg - x)))
+
+
+def sign(a):
+    if a == 0 or a == -0:
+        return 0
+    return a / -a
+    
+####################################################################
+# Generate a single attractive vector.
+####################################################################
+def gen_an_attractive_field(x, y, goal):
+    r = 1.5
+    s = 30.0
+    al = 1.0/s
+    
+    d = distance(x, y, goal)
+    
+    theta = math.atan2(goal.y - y, goal.x - x)
+    
+    temp = None
+    if d < r:
+        temp = (0.0, 0.0)
+    elif r <= d and d <= s+r:
+        temp = (al*(d-r)*math.cos(theta), al*(d-r)*math.sin(theta))
+    elif d > s+r:
+        temp = (al*s*math.cos(theta), al*s*math.sin(theta))
+
+    return temp
+
+
+####################################################################
+####################################################################
+####################################################################
+####################################################################
 class Agent(object):
     """Class handles all command and control logic for a teams tanks."""
 
     def __init__(self, bzrc):
-        self.bzrc = bzrc
+        self.bzrc      = bzrc
         self.constants = self.bzrc.get_constants()
-        self.commands = []
-        
+        self.commands  = []
+
+        self.current_x_goal = 0
+        self.current_y_goal = 350
+
+        self.tank_error = 0        
+        self.tank_time  = 0
 
     def tick(self, time_diff):
         """Some time has passed; decide what to do next."""
         mytanks, othertanks, flags, shots = self.bzrc.get_lots_o_stuff()
-        self.mytanks = mytanks
+        self.mytanks    = mytanks
         self.othertanks = othertanks
-        self.flags = flags
-        self.shots = shots
-        self.commands = []
+        self.flags      = flags
+        self.shots      = shots
+        self.commands   = []
 
-        self.counter += 1
-        
-        for tank in self.mytanks:
-            self.moveForwardOrTurn(tank)
-            self.randomShoot(tank)
+        if len(self.mytanks) > 0:
+            self.send_to_fly(self.mytanks[0])
 
         results = self.bzrc.do_commands(self.commands)
 
-    def moveForwardOrTurn(self, tank):
-        
-        if self.counter < 80:
-            #Go Forward
-            command = Command(tank.index, 1.0, 0.0, False)
-            self.commands.append(command)
-        elif self.counter > 70 and self.counter < 160:
-            #Stop and Turn
-            command = Command(tank.index, 0.5, 1.0, False)
-            self.commands.append(command)
-        else:
-            #Reset
-            self.counter = 0
-        
-        return
+    ####################################################################
+    # Determines the current goal for the dunk: fly dunk back and forth
+    # between (0, 350) and (0,-350) -> up and down the middle of the
+    # map.
+    ####################################################################
+    def get_fly_goal(self, tank):
+        x = self.current_x_goal
+        y = self.current_y_goal
+        close_enough_offset = 70
 
+        if   (tank.y + close_enough_offset) >=  350:
+            y = -350
+        elif (tank.y - close_enough_offset) <= -350:
+            y = 350
+
+        return AGoal(x,y)
+
+    ####################################################################
+    # Send this dunk agent back and forth across the map.
+    ####################################################################
+    def send_to_fly(self, tank, time_diff):
+        
+        goal = determine_goal(tank)
+
+        delta_position = gen_an_attractive_field(tank.x, tank.y, goal)
+        
+        new_theta = math.atan2(delta_position[1], delta_position[0])
+        
+        new_theta = new_theta + 2 * math.pi if new_theta < 0 else new_theta
+        pos_tank_angle = tank.angle + 2 * math.pi if tank.angle < 0 else tank.angle
+        
+        error = new_theta - pos_tank_angle
+        
+        error = error - 2 * math.pi if error > math.pi else error
+        
+        derivative = (error - self.tank_error) / (time_diff - self.tank_time)
+      
+        new_angle_velocity = (self.kp * error) + (self.kd * derivative)
+        
+        temp_angle = math.fabs(new_angle_velocity)
+        if temp_angle >= 1:
+            speed = 0.0
+        else:
+            speed = 1.0 - temp_angle
+        
+        fly_command = Command(tank.index, speed, new_angle_velocity, True)
+        self.commands.append(fly_command)
+        
+        self.tank_error = error
+        self.tank_time  = time_diff
+        
+        return 
 
 def main():
     # Process CLI arguments.
