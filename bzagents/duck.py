@@ -83,8 +83,12 @@ class Agent(object):
         self.constants = self.bzrc.get_constants()
         self.commands  = []
 
+        self.kp = 0.60
+        self.kd = 0.50
+
+
         self.current_x_goal = 0
-        self.current_y_goal = 350
+        self.current_y_goal = 400
 
         self.tank_error = 0        
         self.tank_time  = 0
@@ -99,7 +103,7 @@ class Agent(object):
         self.commands   = []
 
         if len(self.mytanks) > 0:
-            self.send_to_fly(self.mytanks[0])
+            self.send_to_fly(self.mytanks[0], time_diff)
 
         results = self.bzrc.do_commands(self.commands)
 
@@ -109,23 +113,21 @@ class Agent(object):
     # map.
     ####################################################################
     def get_fly_goal(self, tank):
-        x = self.current_x_goal
-        y = self.current_y_goal
         close_enough_offset = 70
 
-        if   (tank.y + close_enough_offset) >=  350:
-            y = -350
-        elif (tank.y - close_enough_offset) <= -350:
-            y = 350
+        if   (tank.y + close_enough_offset) >=  400:
+            self.current_y_goal = -400
+        elif (tank.y - close_enough_offset) <= -400:
+            self.current_y_goal = 400
 
-        return AGoal(x,y)
+        return AGoal(self.current_x_goal,self.current_y_goal)
 
     ####################################################################
     # Send this dunk agent back and forth across the map.
     ####################################################################
     def send_to_fly(self, tank, time_diff):
         
-        goal = determine_goal(tank)
+        goal = self.get_fly_goal(tank)
 
         delta_position = gen_an_attractive_field(tank.x, tank.y, goal)
         
