@@ -11,13 +11,16 @@ class Agent(object):
         self.commands = []
         self.tanks = []
         self.ducks = []
+        self.enemies = []
         self.target = None
 
     def tick(self, time_diff):
         my_tanks, other_tanks, flags, shots = self.bzrc.get_lots_o_stuff()
         self.tanks = my_tanks
         self.ducks = other_tanks
-        self.target = other_tanks[0]
+        self.enemies = [tank for tank in other_tanks if tank.color !=
+                        self.constants['team']]
+        self.target = self.enemies[0]
 
 
 def main():
