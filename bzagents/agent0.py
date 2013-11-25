@@ -26,6 +26,7 @@ import time
 
 from bzrc import BZRC, Command
 
+
 class Agent(object):
     """Class handles all command and control logic for a teams tanks."""
 

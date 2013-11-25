@@ -27,10 +27,12 @@ import random
 
 from bzrc import BZRC, Command
 
+
 class AGoal:
     def __init__(self, x, y):
         self.x = x
         self.y = y
+
 
 ####################################################################
 # Distance between two points.
@@ -47,7 +49,8 @@ def sign(a):
     if a == 0 or a == -0:
         return 0
     return a / -a
-    
+
+
 ####################################################################
 # Generate a single attractive vector.
 ####################################################################
@@ -63,7 +66,7 @@ def gen_an_attractive_field(x, y, goal):
     temp = None
     if d < r:
         temp = (0.0, 0.0)
-    elif r <= d and d <= s+r:
+    elif r <= d <= s+r:
         temp = (al*(d-r)*math.cos(theta), al*(d-r)*math.sin(theta))
     elif d > s+r:
         temp = (al*s*math.cos(theta), al*s*math.sin(theta))
@@ -79,31 +82,34 @@ class Agent(object):
     """Class handles all command and control logic for a teams tanks."""
 
     def __init__(self, bzrc):
-        self.bzrc      = bzrc
+        self.bzrc = bzrc
         self.constants = self.bzrc.get_constants()
-        self.commands  = []
+        self.commands = []
 
         self.kp = 0.60
         self.kd = 0.50
-
 
         self.current_x_goal = 0
         self.current_y_goal = 400
 
         self.tank_error = 0        
-        self.tank_time  = 0
+        self.tank_time = 0
+        self.my_tanks = []
+        self.other_tanks = []
+        self.flags = []
+        self.shots = []
 
     def tick(self, time_diff):
         """Some time has passed; decide what to do next."""
-        mytanks, othertanks, flags, shots = self.bzrc.get_lots_o_stuff()
-        self.mytanks    = mytanks
-        self.othertanks = othertanks
-        self.flags      = flags
-        self.shots      = shots
-        self.commands   = []
+        my_tanks, other_tanks, flags, shots = self.bzrc.get_lots_o_stuff()
+        self.my_tanks = my_tanks
+        self.other_tanks = other_tanks
+        self.flags = flags
+        self.shots = shots
+        self.commands = []
 
-        if len(self.mytanks) > 0:
-            self.send_to_fly(self.mytanks[0], time_diff)
+        if len(self.my_tanks) > 0:
+            self.send_to_fly(self.my_tanks[0], time_diff)
 
         results = self.bzrc.do_commands(self.commands)
 
@@ -115,12 +121,12 @@ class Agent(object):
     def get_fly_goal(self, tank):
         close_enough_offset = 70
 
-        if   (tank.y + close_enough_offset) >=  400:
+        if (tank.y + close_enough_offset) >= 400:
             self.current_y_goal = -400
         elif (tank.y - close_enough_offset) <= -400:
             self.current_y_goal = 400
 
-        return AGoal(self.current_x_goal,self.current_y_goal)
+        return AGoal(self.current_x_goal, self.current_y_goal)
 
     ####################################################################
     # Send this dunk agent back and forth across the map.
@@ -154,9 +160,10 @@ class Agent(object):
         self.commands.append(fly_command)
         
         self.tank_error = error
-        self.tank_time  = time_diff
+        self.tank_time = time_diff
         
         return 
+
 
 def main():
     # Process CLI arguments.
