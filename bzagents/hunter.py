@@ -9,9 +9,15 @@ class Agent(object):
         self.bzrc = bzrc
         self.constants = self.bzrc.get_constants()
         self.commands = []
+        self.tanks = []
+        self.ducks = []
+        self.target = None
 
     def tick(self, time_diff):
-        pass
+        my_tanks, other_tanks, flags, shots = self.bzrc.get_lots_o_stuff()
+        self.tanks = my_tanks
+        self.ducks = other_tanks
+        self.target = other_tanks[0]
 
 
 def main():
