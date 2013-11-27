@@ -82,7 +82,6 @@ sigma_x = matrix('0.1 0   0    0   0   0  ;\
 
 class Agent(object):
     def __init__(self, bzrc):
-        global mu_not, sigma_not
         self.bzrc = bzrc
         self.constants = self.bzrc.get_constants()
         self.commands = []
@@ -90,9 +89,17 @@ class Agent(object):
         self.hunter = None
         self.enemies = []
         self.target = None
-        self.kalman_vars = {'mu': mu_not, 'sigma': sigma_not}
+        self.kalman_vars = {}
+        self.reset_kalman()
+        self.ave_time_diff = 0
+        self.ave_time_diff_samples = 0
 
     def tick(self, time_diff):
+        # calculate iterative average of time_diff -- used for future prediction
+        self.ave_time_diff = self.ave_time_diff_samples * self.ave_time_diff + time_diff
+        self.ave_time_diff_samples += 1
+        self.ave_time_diff /= self.ave_time_diff_samples
+
         my_tanks, other_tanks, flags, shots = self.bzrc.get_lots_o_stuff()
         self.tanks = my_tanks
         if self.hunter is None:
@@ -101,20 +108,34 @@ class Agent(object):
                         self.constants['team']]
         if len(self.enemies) > 0:
             self.target = self.enemies[0]
-        else:
+        else:  # we must have killed the tank
             self.target = None
+            self.reset_kalman()
 
-        self.kalman_update()
+        self.kalman_update(time_diff)
 
-    def kalman_update(self):
+    def reset_kalman(self):
+        global mu_not, sigma_not
+        self.kalman_vars['mu'] = mu_not
+        self.kalman_vars['sigma'] = sigma_not
+
+    def kalman_update(self, time_diff):
         global H, I, sigma_x, sigma_z
-        tmp = F()*self.kalman_vars['sigma']*F().T + sigma_x
+        _F = F(time_diff)
+        tmp = _F*self.kalman_vars['sigma']*_F.T + sigma_x
         k = tmp*H.T*(H*tmp*H.T + sigma_z).I
         z = matrix([[self.target.x], [self.target.y]])
-        new_mu = F()*self.kalman_vars['mu'] + k*(z - H*F()*self.kalman_vars['mu'])
+        new_mu = _F*self.kalman_vars['mu'] + k*(z - H*_F*self.kalman_vars['mu'])
         new_sigma = (I - k*H)*tmp
         self.kalman_vars['mu'] = new_mu
         self.kalman_vars['sigma'] = new_sigma
+
+    def predict_target_future_mu(self, time_steps):
+        result = self.kalman_vars['mu']
+        _F = F(self.ave_time_diff)
+        for i in range(time_steps):
+            result = _F*result
+        return result
 
 
 def main():
