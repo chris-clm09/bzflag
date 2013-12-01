@@ -2,36 +2,7 @@ __author__ = 'crunk'
 
 import sys
 from bzrc import *
-from numpy import matrix
-
-###########################Kalman Functions#############################
-
-
-########################################################################
-# 
-########################################################################
-def mu_plus_one():
-
-    return
-
-
-########################################################################
-# 
-########################################################################
-def sigma_plus_one():
-
-    return
-
-
-########################################################################
-# 
-########################################################################
-def k_plus_one():
-
-    return
-
-#-----------------------------END-Kalman Functions---------------
-#----------------------------------------------------------------
+from numpy.matrixlib import matrix, matrix_power
 
 ###########################Constants And Stuff#############################
 mu_not = matrix('000000')
@@ -100,6 +71,7 @@ class Agent(object):
         self.ave_time_diff_samples += 1
         self.ave_time_diff /= self.ave_time_diff_samples
 
+        # Update agent's state
         my_tanks, other_tanks, flags, shots = self.bzrc.get_lots_o_stuff()
         self.tanks = my_tanks
         if self.hunter is None:
@@ -107,8 +79,8 @@ class Agent(object):
         self.enemies = [tank for tank in other_tanks if tank.color !=
                         self.constants['team']]
         if len(self.enemies) > 0:
-            self.target = self.enemies[0]
-        else:  # we must have killed the tank
+            self.target = self.enemies[0]  # this assumes that tank[0] will continue to be tank[0] until it is killed
+        else:  # we must have killed the target tank
             self.target = None
             self.reset_kalman()
 
@@ -124,18 +96,15 @@ class Agent(object):
         _F = F(time_diff)
         tmp = _F*self.kalman_vars['sigma']*_F.T + sigma_x
         k = tmp*H.T*(H*tmp*H.T + sigma_z).I
-        z = matrix([[self.target.x], [self.target.y]])
+        z = matrix([[self.target.x], [self.target.y]])  # our observation
         new_mu = _F*self.kalman_vars['mu'] + k*(z - H*_F*self.kalman_vars['mu'])
         new_sigma = (I - k*H)*tmp
         self.kalman_vars['mu'] = new_mu
         self.kalman_vars['sigma'] = new_sigma
 
     def predict_target_future_mu(self, time_steps):
-        result = self.kalman_vars['mu']
         _F = F(self.ave_time_diff)
-        for i in range(time_steps):
-            result = _F*result
-        return result
+        return matrix_power(_F, time_steps)*self.kalman_vars['mu']
 
 
 def main():
