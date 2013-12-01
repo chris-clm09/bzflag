@@ -27,6 +27,13 @@ H = matrix('1 0 0 0 0 0;\
 sigma_z = matrix('25  0;\
                    0 25')
 
+sigma_x = matrix('0.1 0   0    0   0   0  ;\
+                  0   0.1 0    0   0   0  ;\
+                  0   0   100  0   0   0  ;\
+                  0   0   0    0.1 0   0  ;\
+                  0   0   0    0   0.1 0  ;\
+                  0   0   0    0   0   100')
+
 
 def F(delta_t=0.5):
     c = -0.1
@@ -39,13 +46,6 @@ def F(delta_t=0.5):
     m = m + '0 0 0 0 1 ' + str(delta_t) + ';'
     m = m + '0 0 0 0 ' + str(c) + ' 1'
     return matrix(m)
-
-sigma_x = matrix('0.1 0   0    0   0   0  ;\
-                  0   0.1 0    0   0   0  ;\
-                  0   0   100  0   0   0  ;\
-                  0   0   0    0.1 0   0  ;\
-                  0   0   0    0   0.1 0  ;\
-                  0   0   0    0   0   100')
 
 #-----------------------------END--------------------------------
 #----------------------------------------------------------------
@@ -61,7 +61,7 @@ class Agent(object):
         self.enemies = []
         self.target = None
         self.kalman_vars = {}
-        self.reset_kalman()
+        self.init_kalman()
         self.ave_time_diff = 0
         self.ave_time_diff_samples = 0
 
@@ -82,11 +82,12 @@ class Agent(object):
             self.target = self.enemies[0]  # this assumes that tank[0] will continue to be tank[0] until it is killed
         else:  # we must have killed the target tank
             self.target = None
-            self.reset_kalman()
+            self.init_kalman()
 
         self.kalman_update(time_diff)
+        self.plot_kalman()
 
-    def reset_kalman(self):
+    def init_kalman(self):
         global mu_not, sigma_not
         self.kalman_vars['mu'] = mu_not
         self.kalman_vars['sigma'] = sigma_not
@@ -105,6 +106,9 @@ class Agent(object):
     def predict_target_future_mu(self, time_steps):
         _F = F(self.ave_time_diff)
         return matrix_power(_F, time_steps)*self.kalman_vars['mu']
+
+    def plot_kalman(self):
+        pass
 
 
 def main():
