@@ -2,10 +2,25 @@ __author__ = 'crunk'
 
 import sys
 from bzrc import *
-from numpy.matrixlib import matrix, matrix_power
+import numpy as np
+from numpy.matrixlib import matrix
+from numpy.linalg import matrix_power
+import matplotlib
+import matplotlib.mlab as mlab
+import matplotlib.pyplot as plt
+
+plt.ion()
+fig = plt.figure()  # only use one figure
+plt.title('Kalman Filter Density')
+plt.subplot(111, autoscale_on=False, xlim=(-400, 400), ylim=(-400, 400))
 
 ###########################Constants And Stuff#############################
-mu_not = matrix('000000')
+mu_not = matrix('0;\
+                 0;\
+                 0;\
+                 0;\
+                 0;\
+                 0')
 
 sigma_not = matrix('100  0   0    0   0   0  ;\
                       0  0.1 0    0   0   0  ;\
@@ -54,11 +69,17 @@ def F(delta_t=0.5):
 class Agent(object):
     def __init__(self, bzrc):
         self.bzrc = bzrc
+        my_tanks, other_tanks, flags, shots = self.bzrc.get_lots_o_stuff()
+
         self.constants = self.bzrc.get_constants()
         self.commands = []
         self.tanks = []
         self.hunter = None
         self.enemies = []
+        self.enemy_flag = None
+        for flag in flags:
+            if flag.color != self.constants['team']:
+                self.enemy_flag = flag
         self.target = None
         self.kalman_vars = {}
         self.init_kalman()
@@ -80,16 +101,22 @@ class Agent(object):
                         self.constants['team']]
         if len(self.enemies) > 0:
             self.target = self.enemies[0]  # this assumes that tank[0] will continue to be tank[0] until it is killed
+            self.kalman_update(time_diff)
+            self.plot_kalman()
         else:  # we must have killed the target tank
             self.target = None
             self.init_kalman()
 
-        self.kalman_update(time_diff)
-        self.plot_kalman()
-
     def init_kalman(self):
         global mu_not, sigma_not
-        self.kalman_vars['mu'] = mu_not
+        # initial mean should be around the enemy flag
+        initial_mu = mu_not + matrix([[self.enemy_flag.x],
+                                      [0],
+                                      [0],
+                                      [self.enemy_flag.y],
+                                      [0],
+                                      [0]])
+        self.kalman_vars['mu'] = initial_mu
         self.kalman_vars['sigma'] = sigma_not
 
     def kalman_update(self, time_diff):
@@ -102,13 +129,31 @@ class Agent(object):
         new_sigma = (I - k*H)*tmp
         self.kalman_vars['mu'] = new_mu
         self.kalman_vars['sigma'] = new_sigma
+        # print self.kalman_vars['mu']
+        # print self.kalman_vars['sigma']
 
     def predict_target_future_mu(self, time_steps):
         _F = F(self.ave_time_diff)
         return matrix_power(_F, time_steps)*self.kalman_vars['mu']
 
     def plot_kalman(self):
-        pass
+        #print self.kalman_vars['mu']
+        #print self.kalman_vars['sigma']
+        s_tx = self.kalman_vars['sigma'][0, 0]
+        s_ty = self.kalman_vars['sigma'][3, 3]
+        s_txy = self.kalman_vars['sigma'][3, 0]
+        mu_tx = self.kalman_vars['mu'][0, 0]
+        mu_ty = self.kalman_vars['mu'][3, 0]
+
+        size = int(self.constants['worldsize'])
+        delta = 1
+        x = np.arange(-size/2, size/2, delta)
+        y = np.arange(-size/2, size/2, delta)
+        X, Y = np.meshgrid(x, y)
+        Z = mlab.bivariate_normal(X, Y, s_tx, s_ty, mu_tx, mu_ty, s_txy)
+        plt.clf()
+        plt.pcolormesh(X, Y, Z, cmap='hot')
+        plt.draw()
 
 
 def main():
@@ -141,3 +186,5 @@ def main():
 
 if __name__ == '__main__':
     main()
+    #plt.ioff()
+    #plt.show()
