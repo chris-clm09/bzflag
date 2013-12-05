@@ -2,6 +2,7 @@ __author__ = 'crunk'
 
 import sys
 from bzrc import *
+from common import *
 import numpy as np
 from numpy.matrixlib import matrix
 from numpy.linalg import matrix_power
@@ -66,6 +67,7 @@ def F(delta_t=0.5):
 #-----------------------------END--------------------------------
 #----------------------------------------------------------------
 
+
 ########################################################################
 ########################################################################
 class Agent(object):
@@ -96,7 +98,6 @@ class Agent(object):
 
         self.first_hitable_location = None
 
-
     ########################################################################
     ########################################################################
     def tick(self, time_diff):
@@ -120,8 +121,8 @@ class Agent(object):
                 self.first_hitable_location = loc
                 self.fire_on_location(loc[0], loc[1], time_diff)
             else:
-                self.fire_on_location(self.first_hitable_location[0], 
-                                      self.first_hitable_location[1], 
+                self.fire_on_location(self.first_hitable_location[0],
+                                      self.first_hitable_location[1],
                                       time_diff)
 
             #self.plot_kalman()
@@ -160,8 +161,8 @@ class Agent(object):
 
     ########################################################################
     ########################################################################
-    def predict_target_future_mu(self, time_steps):
-        return F(time_steps) * self.kalman_vars['mu']
+    def predict_target_future_mu(self, delta_t):
+        return F(delta_t) * self.kalman_vars['mu']
 
     ########################################################################
     ########################################################################
@@ -184,23 +185,21 @@ class Agent(object):
         plt.pcolormesh(X, Y, Z, cmap='hot')
         plt.draw()
 
-
-
-
-
     ########################################################################
     ########################################################################
-    def get_angular_error_to_location(self,x,y):
+    def get_angular_error_to_location(self, x, y):
         tank = self.hunter
 
-        new_theta = math.atan2(y, x)
+        new_theta = math.atan2(y - tank.y, x - tank.x)
 
-        new_theta      = new_theta  + 2 * math.pi if new_theta  < 0 else new_theta
-        pos_tank_angle = tank.angle + 2 * math.pi if tank.angle < 0 else tank.angle
+        #new_theta      = new_theta  + 2 * math.pi if new_theta  < 0 else new_theta
+        #pos_tank_angle = tank.angle + 2 * math.pi if tank.angle < 0 else tank.angle
+        new_theta = standardize_angle(new_theta)
+        tank_angle = standardize_angle(tank.angle)
         
-        error = new_theta - pos_tank_angle
+        error = standardize_angle(new_theta - tank_angle)
         
-        error = error - 2 * math.pi if error > math.pi else error
+        error = error - 2 * math.pi if error > math.pi else error  # convert error back to (-pi, pi]
 
         return error
 
@@ -210,25 +209,25 @@ class Agent(object):
         shot_speed = float(self.constants['shotspeed'])
 
         duck_state = self.kalman_vars['mu']
-        duck_v     = sqrt(pow(duck_state[1,0], 2.0) + pow(duck_state[4,0], 2.0))
+        duck_v     = sqrt(pow(duck_state[1, 0], 2.0) + pow(duck_state[4, 0], 2.0))
 
-        dx = self.hunter.x - duck_state[0,0]
-        dy = self.hunter.y - duck_state[3,0]
-        d_to_duck  = sqrt(pow(dx, 2.0) + pow(dy,2.0))
+        dx = self.hunter.x - duck_state[0, 0]
+        dy = self.hunter.y - duck_state[3, 0]
+        d_to_duck = sqrt(pow(dx, 2.0) + pow(dy, 2.0))
 
-        time_steps_ahead = d_to_duck / (shot_speed - duck_v)
-        print "time_ahead:", time_steps_ahead, 
+        delta_t = d_to_duck / (shot_speed - duck_v)
+        print "time_to_future_target:", delta_t,
 
-        future_duck_mu = self.predict_target_future_mu(time_steps_ahead)
-        future_duck_pos = (future_duck_mu[0,0], future_duck_mu[3,0])
+        future_duck_mu = self.predict_target_future_mu(delta_t)
+        future_duck_pos = (future_duck_mu[0, 0], future_duck_mu[3, 0])
 
-        print "cur:", (duck_state[0,0], duck_state[3,0]), "future:", future_duck_pos
+        print "cur:", (duck_state[0, 0], duck_state[3, 0]), "future:", future_duck_pos
 
         return future_duck_pos
 
     ########################################################################
     ########################################################################
-    def get_percent_of_angular_velocity(self,error, time_diff):
+    def get_percent_of_angular_velocity(self, error, time_diff):
         derivative = (error - self.error0) / (time_diff - self.time_set)
       
         new_angle_velocity = (self.kp * error) + (self.kd * derivative)
@@ -237,10 +236,8 @@ class Agent(object):
 
     ########################################################################
     ########################################################################
-    def fire_on_location(self, x,y,time_diff):
-
-
-        angle_error = self.get_angular_error_to_location(x,y)
+    def fire_on_location(self, x, y, time_diff):
+        angle_error = self.get_angular_error_to_location(x, y)
 
         new_angle_velocity = self.get_percent_of_angular_velocity(angle_error, time_diff)
 
@@ -260,9 +257,6 @@ class Agent(object):
         self.time_set = time_diff
         
         return
-
-
-
 
 
 ########################################################################
