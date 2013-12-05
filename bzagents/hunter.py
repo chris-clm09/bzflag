@@ -94,7 +94,7 @@ class Agent(object):
         self.kp = 0.60
         self.kd = 0.50
 
-        self.first_hitable_location = 0
+        self.first_hitable_location = None
 
 
     ########################################################################
@@ -107,15 +107,24 @@ class Agent(object):
 
         # Update agent's state
         my_tanks, other_tanks, flags, shots = self.bzrc.get_lots_o_stuff()
-        self.tanks = my_tanks
-        if self.hunter is None:
-            self.hunter = self.tanks[0]
+        self.tanks   = my_tanks
+        self.hunter  = self.tanks[0]
         self.enemies = [tank for tank in other_tanks if tank.color !=
                         self.constants['team']]
         if len(self.enemies) > 0:
             self.target = self.enemies[0]  # this assumes that tank[0] will continue to be tank[0] until it is killed
             self.kalman_update(time_diff)
-            self.plot_kalman()
+
+            loc = self.find_first_hitable_location()
+            if self.first_hitable_location == None:
+                self.first_hitable_location = loc
+                self.fire_on_location(loc[0], loc[1], time_diff)
+            else:
+                self.fire_on_location(self.first_hitable_location[0], 
+                                      self.first_hitable_location[1], 
+                                      time_diff)
+
+            #self.plot_kalman()
         else:  # we must have killed the target tank
             self.target = None
             self.init_kalman()
@@ -152,8 +161,7 @@ class Agent(object):
     ########################################################################
     ########################################################################
     def predict_target_future_mu(self, time_steps):
-        _F = F(self.ave_time_diff)
-        return matrix_power(_F, time_steps)*self.kalman_vars['mu']
+        return F(time_steps) * self.kalman_vars['mu']
 
     ########################################################################
     ########################################################################
@@ -183,8 +191,10 @@ class Agent(object):
     ########################################################################
     ########################################################################
     def get_angular_error_to_location(self,x,y):
+        tank = self.hunter
+
         new_theta = math.atan2(y, x)
-        
+
         new_theta      = new_theta  + 2 * math.pi if new_theta  < 0 else new_theta
         pos_tank_angle = tank.angle + 2 * math.pi if tank.angle < 0 else tank.angle
         
@@ -196,7 +206,29 @@ class Agent(object):
 
     ########################################################################
     ########################################################################
-    def get_percent_of_angular_velocity(self,error):
+    def find_first_hitable_location(self):
+        shot_speed = float(self.constants['shotspeed'])
+
+        duck_state = self.kalman_vars['mu']
+        duck_v     = sqrt(pow(duck_state[1,0], 2.0) + pow(duck_state[4,0], 2.0))
+
+        dx = self.hunter.x - duck_state[0,0]
+        dy = self.hunter.y - duck_state[3,0]
+        d_to_duck  = sqrt(pow(dx, 2.0) + pow(dy,2.0))
+
+        time_steps_ahead = d_to_duck / (shot_speed - duck_v)
+        print "time_ahead:", time_steps_ahead, 
+
+        future_duck_mu = self.predict_target_future_mu(time_steps_ahead)
+        future_duck_pos = (future_duck_mu[0,0], future_duck_mu[3,0])
+
+        print "cur:", (duck_state[0,0], duck_state[3,0]), "future:", future_duck_pos
+
+        return future_duck_pos
+
+    ########################################################################
+    ########################################################################
+    def get_percent_of_angular_velocity(self,error, time_diff):
         derivative = (error - self.error0) / (time_diff - self.time_set)
       
         new_angle_velocity = (self.kp * error) + (self.kd * derivative)
@@ -205,76 +237,27 @@ class Agent(object):
 
     ########################################################################
     ########################################################################
-    def get_duck_travel_time(self,travel_to_x,travel_to_y):
-        duck_x = self.kalman_vars['mu'][0][0]
-        duck_v_x = self.kalman_vars['mu'][1][0]
-
-        return (travel_to_x - duck_x) / float(duck_v_x)
-
-    ########################################################################
-    ########################################################################
-    def get_tank_rotation_time_to_pos(self, x, y):
-        error_thea = get_angular_error_to_location(x,y)
-        angular_velocity     = self.constants['tankangvel']
-        angular_acceleration = self.constants['angularaccel']
-
-        #Quadratic Equasion to solve
-        # 0 = thea_error + ang_v * d_time + 1/2 ang_accel d_time^2
-        sol_one = (-angular_velocity + sqrt(pow(angular_velocity,2.0) + 2 * angular_acceleration * error_thea)) / float(angular_acceleration)
-        sol_two = (-angular_velocity - sqrt(pow(angular_velocity,2.0) + 2 * angular_acceleration * error_thea)) / float(angular_acceleration)
-
-        time = sol_two if sol_one < 0 else None
-
-        if time:
-            if time < 0:
-                raise NameError("get_tank_rotation_time_to_pos: Both sol are negative?")
-            else:
-                return time
-
-        time = sol_one if sol_one > sol_two else sol_two
-
-        if time < 0:
-            raise NameError("get_tank_rotation_time_to_pos: Found a negative solution?")
-
-        return time
-
-    ########################################################################
-    ########################################################################
-    def get_shot_travel_time_to_pos(self,x,y):
-        distance = sqrt(pow(x - self.hunter.x,2.0) + pow(y - self.hunter.y, 2.0))
-        return distance / float(self.constants['shotspeed'])
-
-    ########################################################################
-    ########################################################################
-    def can_hit_location(self,x,y):
-        dunk_travel_time  = self.get_duck_travel_time(x,y)
-        angle_change_time = get_tank_rotation_time_to_pos(x,y)
-        shot_travel_time  = get_shot_travel_time_to_pos(x,y)
-        reload_time       = 0
-        
-        error = abs(dunk_travel_time - (angle_change_time+shot_travel_time+reload_time))
-
-        if error < .1:
-            print 'Found Hit:', x,y
-
-        return error <= .1
-
-    ########################################################################
-    ########################################################################
-    def find_first_hitable_location(self):
-
-        return
-
-
-    ########################################################################
-    ########################################################################
     def fire_on_location(self, x,y,time_diff):
 
-        capture_flag_command = Command(tank.index, speed, new_angle_velocity, True)
-        self.commands.append(capture_flag_command)
-        
-        self.error0[tank.index] = error
-        self.time_set[tank.index] = time_diff
+
+        angle_error = self.get_angular_error_to_location(x,y)
+
+        new_angle_velocity = self.get_percent_of_angular_velocity(angle_error, time_diff)
+
+        commands = []
+        capture_flag_command = None
+
+        if angle_error < 3:
+            capture_flag_command = Command(self.hunter.index, 0, new_angle_velocity, True)
+            self.first_hitable_location = None
+        else:
+            capture_flag_command = Command(self.hunter.index, 0, new_angle_velocity, False)
+
+        commands.append(capture_flag_command)
+        results = self.bzrc.do_commands(commands)
+
+        self.error0   = angle_error
+        self.time_set = time_diff
         
         return
 
