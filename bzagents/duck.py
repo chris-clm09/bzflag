@@ -156,7 +156,9 @@ class Agent(object):
         else:
             speed = 1.0 - temp_angle
         
-        fly_command = Command(tank.index, speed, new_angle_velocity, True)
+        speed = max(.5, speed)
+
+        fly_command = Command(tank.index, speed, new_angle_velocity, False)
         self.commands.append(fly_command)
         
         self.tank_error = error

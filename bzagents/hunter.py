@@ -213,9 +213,19 @@ class Agent(object):
 
         dx = self.hunter.x - duck_state[0, 0]
         dy = self.hunter.y - duck_state[3, 0]
+
+        #add some reload time
+        if self.hunter.time_to_reload > 0:
+            dx = dx - duck_state[1,0] * self.hunter.time_to_reload
+            dy = dy - duck_state[4,0] * self.hunter.time_to_reload
+
         d_to_duck = sqrt(pow(dx, 2.0) + pow(dy, 2.0))
 
-        delta_t = (d_to_duck / (shot_speed - duck_v)) + 1
+        # #add some reload time
+        # if self.hunter.time_to_reload > 0:
+        #     d_to_duck = d_to_duck + (duck_v * self.hunter.time_to_reload)
+
+        delta_t = (d_to_duck / (shot_speed - duck_v))
         # print "time_to_future_target:", delta_t,
 
         future_duck_mu = self.predict_target_future_mu(delta_t)
@@ -244,7 +254,8 @@ class Agent(object):
         commands = []
         capture_flag_command = None
 
-        if angle_error < math.pi/8:
+        if abs(angle_error) < .1 and self.first_hitable_location is not None and self.hunter.time_to_reload <= 0:
+            print angle_error
             capture_flag_command = Command(self.hunter.index, 0, new_angle_velocity, True)
             self.first_hitable_location = None
         else:
