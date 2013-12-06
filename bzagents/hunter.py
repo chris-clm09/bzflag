@@ -92,7 +92,7 @@ class Agent(object):
         self.ave_time_diff_samples = 0
 
         self.error0 = 0
-        self.time_set = 0
+        self.time_set = 1
         self.kp = 2.0
         self.kd = 0.10
 
@@ -215,13 +215,13 @@ class Agent(object):
         dy = self.hunter.y - duck_state[3, 0]
         d_to_duck = sqrt(pow(dx, 2.0) + pow(dy, 2.0))
 
-        delta_t = d_to_duck / (shot_speed - duck_v)
-        print "time_to_future_target:", delta_t,
+        delta_t = (d_to_duck / (shot_speed - duck_v)) + 1
+        # print "time_to_future_target:", delta_t,
 
         future_duck_mu = self.predict_target_future_mu(delta_t)
         future_duck_pos = (future_duck_mu[0, 0], future_duck_mu[3, 0])
 
-        print "cur:", (duck_state[0, 0], duck_state[3, 0]), "future:", future_duck_pos
+        # print "cur:", (duck_state[0, 0], duck_state[3, 0]), "future:", future_duck_pos
 
         return future_duck_pos
 
