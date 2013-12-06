@@ -244,7 +244,7 @@ class Agent(object):
         commands = []
         capture_flag_command = None
 
-        if angle_error < 3:
+        if angle_error < math.pi/8:
             capture_flag_command = Command(self.hunter.index, 0, new_angle_velocity, True)
             self.first_hitable_location = None
         else:
