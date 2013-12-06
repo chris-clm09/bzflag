@@ -213,13 +213,19 @@ class Agent(object):
 
         dx = self.hunter.x - duck_state[0, 0]
         dy = self.hunter.y - duck_state[3, 0]
-        d_to_duck = sqrt(pow(dx, 2.0) + pow(dy, 2.0))
 
         #add some reload time
         if self.hunter.time_to_reload > 0:
-            d_to_duck = d_to_duck + (duck_v * self.hunter.time_to_reload)
+            dx = dx - duck_state[1,0] * self.hunter.time_to_reload
+            dy = dy - duck_state[4,0] * self.hunter.time_to_reload
 
-        delta_t = (d_to_duck / (shot_speed - duck_v)) + 2
+        d_to_duck = sqrt(pow(dx, 2.0) + pow(dy, 2.0))
+
+        # #add some reload time
+        # if self.hunter.time_to_reload > 0:
+        #     d_to_duck = d_to_duck + (duck_v * self.hunter.time_to_reload)
+
+        delta_t = (d_to_duck / (shot_speed - duck_v))
         # print "time_to_future_target:", delta_t,
 
         future_duck_mu = self.predict_target_future_mu(delta_t)
