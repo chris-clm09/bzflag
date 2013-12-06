@@ -94,7 +94,7 @@ class Agent(object):
         self.error0 = 0
         self.time_set = 1
         self.kp = 2.0
-        self.kd = 0.10
+        self.kd = 0.30
 
         self.first_hitable_location = None
 
@@ -112,12 +112,13 @@ class Agent(object):
         self.hunter  = self.tanks[0]
         self.enemies = [tank for tank in other_tanks if tank.color !=
                         self.constants['team']]
-        if len(self.enemies) > 0:
-            self.target = self.enemies[0]  # this assumes that tank[0] will continue to be tank[0] until it is killed
+
+        self.target = self.enemies[0]
+        if abs(self.target.x) <= self.constants['worldsize']:  # when a tank is killed, it is warped to (-100k, -100k)
             self.kalman_update(time_diff)
 
             loc = self.find_first_hitable_location()
-            if self.first_hitable_location == None:
+            if self.first_hitable_location is None:
                 self.first_hitable_location = loc
                 self.fire_on_location(loc[0], loc[1], time_diff)
             else:
@@ -127,7 +128,6 @@ class Agent(object):
 
             #self.plot_kalman()
         else:  # we must have killed the target tank
-            self.target = None
             self.init_kalman()
 
     ########################################################################
@@ -156,8 +156,6 @@ class Agent(object):
         new_sigma = (I - k*H)*tmp
         self.kalman_vars['mu'] = new_mu
         self.kalman_vars['sigma'] = new_sigma
-        # print self.kalman_vars['mu']
-        # print self.kalman_vars['sigma']
 
     ########################################################################
     ########################################################################
@@ -167,8 +165,6 @@ class Agent(object):
     ########################################################################
     ########################################################################
     def plot_kalman(self):
-        #print self.kalman_vars['mu']
-        #print self.kalman_vars['sigma']
         s_tx = self.kalman_vars['sigma'][0, 0]
         s_ty = self.kalman_vars['sigma'][3, 3]
         s_txy = self.kalman_vars['sigma'][3, 0]
@@ -192,8 +188,6 @@ class Agent(object):
 
         new_theta = math.atan2(y - tank.y, x - tank.x)
 
-        #new_theta      = new_theta  + 2 * math.pi if new_theta  < 0 else new_theta
-        #pos_tank_angle = tank.angle + 2 * math.pi if tank.angle < 0 else tank.angle
         new_theta = standardize_angle(new_theta)
         tank_angle = standardize_angle(tank.angle)
         
@@ -216,8 +210,8 @@ class Agent(object):
 
         #add some reload time
         if self.hunter.time_to_reload > 0:
-            dx = dx - duck_state[1,0] * self.hunter.time_to_reload
-            dy = dy - duck_state[4,0] * self.hunter.time_to_reload
+            dx = dx - duck_state[1, 0] * self.hunter.time_to_reload
+            dy = dy - duck_state[4, 0] * self.hunter.time_to_reload
 
         d_to_duck = sqrt(pow(dx, 2.0) + pow(dy, 2.0))
 
@@ -226,12 +220,9 @@ class Agent(object):
         #     d_to_duck = d_to_duck + (duck_v * self.hunter.time_to_reload)
 
         delta_t = (d_to_duck / (shot_speed - duck_v))
-        # print "time_to_future_target:", delta_t,
 
         future_duck_mu = self.predict_target_future_mu(delta_t)
         future_duck_pos = (future_duck_mu[0, 0], future_duck_mu[3, 0])
-
-        # print "cur:", (duck_state[0, 0], duck_state[3, 0]), "future:", future_duck_pos
 
         return future_duck_pos
 
@@ -256,6 +247,10 @@ class Agent(object):
 
         if abs(angle_error) < .1 and self.first_hitable_location is not None and self.hunter.time_to_reload <= 0:
             print angle_error
+            mu = self.kalman_vars['mu']
+            print "Current target (x, y, vx, vy) = (%f, %f, %f, %f)" \
+                  % (mu[0, 0], mu[3, 0], mu[1, 0], mu[4, 0])
+            print "Future (x, y) = (%f, %f)" % (x, y)
             capture_flag_command = Command(self.hunter.index, 0, new_angle_velocity, True)
             self.first_hitable_location = None
         else:
