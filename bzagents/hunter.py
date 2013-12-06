@@ -93,8 +93,8 @@ class Agent(object):
 
         self.error0 = 0
         self.time_set = 0
-        self.kp = 0.60
-        self.kd = 0.50
+        self.kp = 2.0
+        self.kd = 0.10
 
         self.first_hitable_location = None
 
