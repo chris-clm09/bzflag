@@ -93,7 +93,7 @@ class Agent(object):
         self.current_y_goal = 400
 
         self.tank_error = 0        
-        self.tank_time = 0
+        self.tank_time = 1
         self.my_tanks = []
         self.other_tanks = []
         self.flags = []

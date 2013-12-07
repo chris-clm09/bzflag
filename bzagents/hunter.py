@@ -94,7 +94,7 @@ class Agent(object):
         self.error0 = 0
         self.time_set = 1
         self.kp = 2.0
-        self.kd = 0.30
+        self.kd = 0
 
         self.first_hitable_location = None
 
@@ -117,10 +117,12 @@ class Agent(object):
         if abs(self.target.x) <= self.constants['worldsize']:  # when a tank is killed, it is warped to (-100k, -100k)
             self.kalman_update(time_diff)
 
-            loc = self.find_first_hitable_location()
             if self.first_hitable_location is None:
-                self.first_hitable_location = loc
-                self.fire_on_location(loc[0], loc[1], time_diff)
+                print 'Time:', time_diff
+                self.first_hitable_location = self.find_first_hitable_location(time_diff)
+                self.fire_on_location(self.first_hitable_location[0], 
+                                      self.first_hitable_location[1], 
+                                      time_diff)
             else:
                 self.fire_on_location(self.first_hitable_location[0],
                                       self.first_hitable_location[1],
@@ -199,7 +201,7 @@ class Agent(object):
 
     ########################################################################
     ########################################################################
-    def find_first_hitable_location(self):
+    def find_first_hitable_location(self, time_diff):
         shot_speed = float(self.constants['shotspeed'])
 
         duck_state = self.kalman_vars['mu']
@@ -224,6 +226,10 @@ class Agent(object):
         future_duck_mu = self.predict_target_future_mu(delta_t)
         future_duck_pos = (future_duck_mu[0, 0], future_duck_mu[3, 0])
 
+        print 'Should Fire AT:', delta_t+time_diff 
+        print "~Enemy is at: \n", self.kalman_vars['mu'] 
+        print "Prediction: ", future_duck_pos
+
         return future_duck_pos
 
     ########################################################################
@@ -246,11 +252,18 @@ class Agent(object):
         capture_flag_command = None
 
         if abs(angle_error) < .1 and self.first_hitable_location is not None and self.hunter.time_to_reload <= 0:
-            print angle_error
             mu = self.kalman_vars['mu']
+
             print "Current target (x, y, vx, vy) = (%f, %f, %f, %f)" \
                   % (mu[0, 0], mu[3, 0], mu[1, 0], mu[4, 0])
-            print "Future (x, y) = (%f, %f)" % (x, y)
+
+            print "Angle Error: ", angle_error
+
+            
+            print "Aimed for (x, y) = (%f, %f)" % (x, y)
+            print "Fired At time: ", time_diff
+            print ''
+
             capture_flag_command = Command(self.hunter.index, 0, new_angle_velocity, True)
             self.first_hitable_location = None
         else:
