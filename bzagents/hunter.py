@@ -205,40 +205,40 @@ class Agent(object):
 
     ########################################################################
     ########################################################################
-    def find_first_hitable_location(self, time_diff):
-        shot_speed = float(self.constants['shotspeed'])
+    # def find_first_hitable_location(self, time_diff):
+    #     shot_speed = float(self.constants['shotspeed'])
 
-        duck_state = self.kalman_vars['mu']
-        duck_v     = sqrt(pow(duck_state[1, 0], 2.0) + pow(duck_state[4, 0], 2.0))
+    #     duck_state = self.kalman_vars['mu']
+    #     duck_v     = sqrt(pow(duck_state[1, 0], 2.0) + pow(duck_state[4, 0], 2.0))
 
-        dx = self.hunter.x - duck_state[0, 0]
-        dy = self.hunter.y - duck_state[3, 0]
+    #     dx = self.hunter.x - duck_state[0, 0]
+    #     dy = self.hunter.y - duck_state[3, 0]
 
-        #add some reload time
-        if self.hunter.time_to_reload > 0:
-            dx = dx - duck_state[1, 0] * self.hunter.time_to_reload
-            dy = dy - duck_state[4, 0] * self.hunter.time_to_reload
+    #     #add some reload time
+    #     if self.hunter.time_to_reload > 0:
+    #         dx = dx - duck_state[1, 0] * self.hunter.time_to_reload
+    #         dy = dy - duck_state[4, 0] * self.hunter.time_to_reload
 
-        d_to_duck = sqrt(pow(dx, 2.0) + pow(dy, 2.0))
+    #     d_to_duck = sqrt(pow(dx, 2.0) + pow(dy, 2.0))
 
-        # #add some reload time
-        # if self.hunter.time_to_reload > 0:
-        #     d_to_duck = d_to_duck + (duck_v * self.hunter.time_to_reload)
+    #     # #add some reload time
+    #     # if self.hunter.time_to_reload > 0:
+    #     #     d_to_duck = d_to_duck + (duck_v * self.hunter.time_to_reload)
 
-        delta_t = (d_to_duck / (shot_speed - duck_v))
+    #     delta_t = (d_to_duck / (shot_speed - duck_v))
 
-        future_duck_mu = self.predict_target_future_mu(delta_t)
-        future_duck_pos = (future_duck_mu[0, 0], future_duck_mu[3, 0])
+    #     future_duck_mu = self.predict_target_future_mu(delta_t)
+    #     future_duck_pos = (future_duck_mu[0, 0], future_duck_mu[3, 0])
 
-        future_duck_mu_a = self.predict_target_future_mu(delta_t + 3)
-        future_duck_pos_a = (future_duck_mu_a[0, 0], future_duck_mu_a[3, 0])
+    #     future_duck_mu_a = self.predict_target_future_mu(delta_t + 3)
+    #     future_duck_pos_a = (future_duck_mu_a[0, 0], future_duck_mu_a[3, 0])
 
-        print 'Should Fire AT:', delta_t+time_diff 
-        print "~Enemy is at: \n", self.kalman_vars['mu']
-        print "Prediction+n: ", future_duck_pos_a 
-        print "Prediction: ", future_duck_pos
+    #     print 'Should Fire AT:', delta_t+time_diff 
+    #     print "~Enemy is at: \n", self.kalman_vars['mu']
+    #     print "Prediction+n: ", future_duck_pos_a 
+    #     print "Prediction: ", future_duck_pos
 
-        return future_duck_pos
+    #     return future_duck_pos
 
 
     def find_first_hitable_location_c(self, time_diff):
@@ -247,8 +247,13 @@ class Agent(object):
 
         target_startX    = duck_state[0,0]
         target_startY    = duck_state[3,0]
+
         target_velocityX = duck_state[2,0]
         target_velocityY = duck_state[4,0]
+
+        if self.hunter.time_to_reload > 0:
+            target_startX = target_startX + target_velocityX * self.hunter.time_to_reload
+            target_startY = target_startY + target_velocityY * self.hunter.time_to_reload
 
         projectile_speed = float(self.constants['shotspeed'])
         tank_X           = self.hunter.x
@@ -283,19 +288,18 @@ class Agent(object):
         else:
             t = min(t1,t2)
 
-        future_duck_mu = self.predict_target_future_mu(t)
+        future_duck_mu = self.predict_target_future_mu(t+2)
         aim_2          = (future_duck_mu[0, 0], future_duck_mu[3, 0])
 
         aim = (t * target_velocityX + target_startX, 
                t * target_velocityY + target_startY)
 
-        print 'Should Fire AT:', t+time_diff, (t,t1,t2)
+        print 'Should Fire AT:', t+time_diff#, (t,t1,t2)
         print "~Enemy is at: \n", self.kalman_vars['mu']
-        # print "Prediction+n: ", future_duck_pos_a 
-        print "Prediction: ", aim
-        print "Prediction_mu: ", aim_2
+        # print "Prediction: ", aim
+        print "Prediction: ", aim_2
 
-        return aim
+        return aim_2
 
     ########################################################################
     ########################################################################
@@ -316,7 +320,7 @@ class Agent(object):
         commands = []
         capture_flag_command = None
 
-        if abs(angle_error) < .1 and self.first_hitable_location is not None and self.hunter.time_to_reload <= 0:
+        if abs(angle_error) < .2 and self.first_hitable_location is not None and self.hunter.time_to_reload <= 0:
             mu = self.kalman_vars['mu']
 
             print "Current target (x, y, vx, vy) = (%f, %f, %f, %f)" \
