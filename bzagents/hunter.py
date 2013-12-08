@@ -16,6 +16,9 @@ fig = plt.figure()  # only use one figure
 plt.title('Kalman Filter Density')
 plt.subplot(111, autoscale_on=False, xlim=(-400, 400), ylim=(-400, 400))
 
+def sqr(number):
+    return pow(number, 2.0)
+
 ###########################Constants And Stuff#############################
 mu_not = matrix('0;\
                  0;\
@@ -53,8 +56,8 @@ sigma_x = matrix('0.1 0   0    0   0   0  ;\
 
 
 def F(delta_t=0.5):
-    c = -0.1
-    # c = 0.0
+    # c = -0.1
+    c = 0.0
 
     m =     '1 ' + str(delta_t) + ' ' + str(pow(delta_t, 2)/2.0) + ' 0 0 0;'
     m = m + '0 1 ' + str(delta_t) + ' 0 0 0;'
@@ -119,7 +122,8 @@ class Agent(object):
 
             if self.first_hitable_location is None:
                 print 'Time:', time_diff
-                self.first_hitable_location = self.find_first_hitable_location(time_diff)
+                # self.first_hitable_location = self.find_first_hitable_location(time_diff)
+                self.first_hitable_location = self.find_first_hitable_location_c(time_diff)
                 self.fire_on_location(self.first_hitable_location[0], 
                                       self.first_hitable_location[1], 
                                       time_diff)
@@ -226,11 +230,72 @@ class Agent(object):
         future_duck_mu = self.predict_target_future_mu(delta_t)
         future_duck_pos = (future_duck_mu[0, 0], future_duck_mu[3, 0])
 
+        future_duck_mu_a = self.predict_target_future_mu(delta_t + 3)
+        future_duck_pos_a = (future_duck_mu_a[0, 0], future_duck_mu_a[3, 0])
+
         print 'Should Fire AT:', delta_t+time_diff 
-        print "~Enemy is at: \n", self.kalman_vars['mu'] 
+        print "~Enemy is at: \n", self.kalman_vars['mu']
+        print "Prediction+n: ", future_duck_pos_a 
         print "Prediction: ", future_duck_pos
 
         return future_duck_pos
+
+
+    def find_first_hitable_location_c(self, time_diff):
+        duck_state = self.kalman_vars['mu']
+        duck_v     = sqrt(pow(duck_state[1, 0], 2.0) + pow(duck_state[4, 0], 2.0))
+
+        target_startX    = duck_state[0,0]
+        target_startY    = duck_state[3,0]
+        target_velocityX = duck_state[2,0]
+        target_velocityY = duck_state[4,0]
+
+        projectile_speed = float(self.constants['shotspeed'])
+        tank_X           = self.hunter.x
+        tank_Y           = self.hunter.y
+
+        #a * sqr(x) + b * x + c == 0
+        a = sqr(target_velocityX) + sqr(target_velocityY) - sqr(projectile_speed)
+        b = 2 * (target_velocityX * (target_startX - tank_X)
+              + target_velocityY * (target_startY - tank_Y))
+        c = sqr(target_startX - tank_X) + sqr(target_startY - tank_Y)
+
+        disc = sqr(b) - (4 * a * c)
+
+        #If the discriminant is less than 0, forget about hitting your target -- 
+        #your projectile can never get there in time. Otherwise, look at two 
+        #candidate solutions:
+        if disc < 0:
+            print 'Blow chunks!'
+            return None
+
+        t1 = (-b + sqrt(disc)) / (2 * a)
+        t2 = (-b - sqrt(disc)) / (2 * a)
+        #Note that if disc == 0 then t1 and t2 are equal.
+
+        #If there are no other considerations such as intervening obstacles, 
+        #simply choose the smaller positive value.
+        t = 0
+        if t1 < 0 or t2 < 0:
+            t = max(t1,t2)
+        elif t1 < 0 and t2 < 0:
+            print "Both times are negative!! Crap!"
+        else:
+            t = min(t1,t2)
+
+        future_duck_mu = self.predict_target_future_mu(t)
+        aim_2          = (future_duck_mu[0, 0], future_duck_mu[3, 0])
+
+        aim = (t * target_velocityX + target_startX, 
+               t * target_velocityY + target_startY)
+
+        print 'Should Fire AT:', t+time_diff, (t,t1,t2)
+        print "~Enemy is at: \n", self.kalman_vars['mu']
+        # print "Prediction+n: ", future_duck_pos_a 
+        print "Prediction: ", aim
+        print "Prediction_mu: ", aim_2
+
+        return aim
 
     ########################################################################
     ########################################################################
@@ -257,10 +322,9 @@ class Agent(object):
             print "Current target (x, y, vx, vy) = (%f, %f, %f, %f)" \
                   % (mu[0, 0], mu[3, 0], mu[1, 0], mu[4, 0])
 
+            print "Aimed for (x, y) = (%f, %f)" % (x, y)
             print "Angle Error: ", angle_error
 
-            
-            print "Aimed for (x, y) = (%f, %f)" % (x, y)
             print "Fired At time: ", time_diff
             print ''
 
