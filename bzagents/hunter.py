@@ -120,17 +120,17 @@ class Agent(object):
         if abs(self.target.x) <= self.constants['worldsize']:  # when a tank is killed, it is warped to (-100k, -100k)
             self.kalman_update(time_diff)
 
-            if self.first_hitable_location is None:
-                print 'Time:', time_diff
+            # if self.first_hitable_location is None:
+            #     print 'Time:', time_diff
                 # self.first_hitable_location = self.find_first_hitable_location(time_diff)
-                self.first_hitable_location = self.find_first_hitable_location_c(time_diff)
-                self.fire_on_location(self.first_hitable_location[0], 
-                                      self.first_hitable_location[1], 
-                                      time_diff)
-            else:
-                self.fire_on_location(self.first_hitable_location[0],
-                                      self.first_hitable_location[1],
-                                      time_diff)
+            self.first_hitable_location = self.find_first_hitable_location_c(time_diff)
+            self.fire_on_location(self.first_hitable_location[0], 
+                                  self.first_hitable_location[1], 
+                                  time_diff)
+            # else:
+            #     self.fire_on_location(self.first_hitable_location[0],
+            #                           self.first_hitable_location[1],
+            #                           time_diff)
 
             #self.plot_kalman()
         else:  # we must have killed the target tank
@@ -298,10 +298,10 @@ class Agent(object):
         aim = (t * target_velocityX + target_startX, 
                t * target_velocityY + target_startY)
 
-        print 'Should Fire AT:', t+time_diff#, (t,t1,t2)
-        print "~Enemy is at: \n", self.kalman_vars['mu']
-        # print "Prediction: ", aim
-        print "Prediction: ", aim_2
+        # print 'Should Fire AT:', t+time_diff#, (t,t1,t2)
+        # print "~Enemy is at: \n", self.kalman_vars['mu']
+        # # print "Prediction: ", aim
+        # print "Prediction: ", aim_2
 
         return aim_2
 
@@ -325,16 +325,16 @@ class Agent(object):
         capture_flag_command = None
 
         if abs(angle_error) < .2 and self.first_hitable_location is not None and self.hunter.time_to_reload <= 0:
-            mu = self.kalman_vars['mu']
+            # mu = self.kalman_vars['mu']
 
-            print "Current target (x, y, vx, vy) = (%f, %f, %f, %f)" \
-                  % (mu[0, 0], mu[3, 0], mu[1, 0], mu[4, 0])
+            # print "Current target (x, y, vx, vy) = (%f, %f, %f, %f)" \
+            #       % (mu[0, 0], mu[3, 0], mu[1, 0], mu[4, 0])
 
-            print "Aimed for (x, y) = (%f, %f)" % (x, y)
-            print "Angle Error: ", angle_error
+            # print "Aimed for (x, y) = (%f, %f)" % (x, y)
+            # print "Angle Error: ", angle_error
 
-            print "Fired At time: ", time_diff
-            print ''
+            # print "Fired At time: ", time_diff
+            # print ''
 
             capture_flag_command = Command(self.hunter.index, 0, new_angle_velocity, True)
             self.first_hitable_location = None
