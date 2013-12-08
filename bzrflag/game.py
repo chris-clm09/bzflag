@@ -440,13 +440,14 @@ class Tank(object):
 
     def shoot(self):
         """Tell the tank to shoot."""
-        if self.reloadtimer > 0 or \
-                len(self.shots) >= self.config['max_shots']:
-            return False
+        # if self.reloadtimer > 0 or \
+        #         len(self.shots) >= self.config['max_shots']:
+        #     return False
         shot = Shot(self, self.config)
         self.shots.insert(0, shot)
         self.team.map.inbox.append(shot)
-        self.reloadtimer = constants.RELOADTIME
+        if self.reloadtimer <= 0:
+            self.reloadtimer = constants.RELOADTIME
         return True
 
     def kill(self):

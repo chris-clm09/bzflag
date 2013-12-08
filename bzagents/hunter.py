@@ -251,6 +251,10 @@ class Agent(object):
         target_velocityX = duck_state[2,0]
         target_velocityY = duck_state[4,0]
 
+        target_startX = target_startX + target_velocityX * 1
+        target_startY = target_startY + target_velocityY * 1
+
+
         if self.hunter.time_to_reload > 0:
             target_startX = target_startX + target_velocityX * self.hunter.time_to_reload
             target_startY = target_startY + target_velocityY * self.hunter.time_to_reload
