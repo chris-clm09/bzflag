@@ -49,10 +49,10 @@ sigma_z = matrix('25  0;\
 
 sigma_x = matrix('0.1 0   0    0   0   0  ;\
                   0   0.1 0    0   0   0  ;\
-                  0   0   100  0   0   0  ;\
+                  0   0   .25  0   0   0  ;\
                   0   0   0    0.1 0   0  ;\
                   0   0   0    0   0.1 0  ;\
-                  0   0   0    0   0   100')
+                  0   0   0    0   0   .25')
 
 
 def F(delta_t=0.5):
@@ -96,8 +96,10 @@ class Agent(object):
 
         self.error0 = 0
         self.time_set = 1
-        self.kp = 2.0
-        self.kd = 0
+        self.kp = 1.5
+        self.kd = 0.2
+
+        self.last_time = 0
 
         self.first_hitable_location = None
 
@@ -109,6 +111,9 @@ class Agent(object):
         self.ave_time_diff_samples += 1
         self.ave_time_diff /= self.ave_time_diff_samples
 
+        delta_t = time_diff - self.last_time
+        self.last_time = time_diff
+
         # Update agent's state
         my_tanks, other_tanks, flags, shots = self.bzrc.get_lots_o_stuff()
         self.tanks   = my_tanks
@@ -117,22 +122,22 @@ class Agent(object):
                         self.constants['team']]
 
         self.target = self.enemies[0]
-        if abs(self.target.x) <= self.constants['worldsize']:  # when a tank is killed, it is warped to (-100k, -100k)
-            self.kalman_update(time_diff)
+        if abs(self.target.x) <= float(self.constants['worldsize']):  # when a tank is killed, it is warped to (-100k, -100k)
+            self.kalman_update(delta_t)
 
-            # if self.first_hitable_location is None:
-            #     print 'Time:', time_diff
-                # self.first_hitable_location = self.find_first_hitable_location(time_diff)
+            #if self.first_hitable_location is None:
+            #    print 'Time:', time_diff
+            #    self.first_hitable_location = self.find_first_hitable_location(time_diff)
             self.first_hitable_location = self.find_first_hitable_location_c(time_diff)
-            self.fire_on_location(self.first_hitable_location[0], 
+            self.fire_on_location(self.first_hitable_location[0],
                                   self.first_hitable_location[1], 
                                   time_diff)
-            # else:
-            #     self.fire_on_location(self.first_hitable_location[0],
-            #                           self.first_hitable_location[1],
-            #                           time_diff)
+            #else:
+            #    self.fire_on_location(self.first_hitable_location[0],
+            #                          self.first_hitable_location[1],
+            #                          time_diff)
 
-            #self.plot_kalman()
+            self.plot_kalman()
         else:  # we must have killed the target tank
             self.init_kalman()
 
@@ -152,16 +157,32 @@ class Agent(object):
 
     ########################################################################
     ########################################################################
-    def kalman_update(self, time_diff):
+    def kalman_update(self, delta_t):
         global H, I, sigma_x, sigma_z
-        _F = F(time_diff)
-        tmp = _F*self.kalman_vars['sigma']*_F.T + sigma_x
-        k = tmp*H.T*(H*tmp*H.T + sigma_z).I
-        z = matrix([[self.target.x], [self.target.y]])  # our observation
-        new_mu = _F*self.kalman_vars['mu'] + k*(z - H*_F*self.kalman_vars['mu'])
-        new_sigma = (I - k*H)*tmp
-        self.kalman_vars['mu'] = new_mu
-        self.kalman_vars['sigma'] = new_sigma
+        print(self.kalman_vars['mu'])
+        print(self.kalman_vars['sigma'])
+        _F = F(delta_t)
+        sigma_t = self.kalman_vars['sigma']
+        mu_t = self.kalman_vars['mu']
+        z_t_plus_one = matrix([[self.target.x], [self.target.y]])
+
+        #tmp = _F*self.kalman_vars['sigma']*_F.T + sigma_x
+        #k = tmp*H.T*(H*tmp*H.T + sigma_z).I
+        #z = matrix([[self.target.x], [self.target.y]])  # our observation
+        #print(z)
+        #new_mu = _F*self.kalman_vars['mu'] + k*(z - H*_F*self.kalman_vars['mu'])
+        #new_sigma = (I - k*H)*tmp
+        #self.kalman_vars['mu'] = new_mu
+        #self.kalman_vars['sigma'] = new_sigma
+
+        K_t_plus_one = (_F*sigma_t*_F.T + sigma_x)*H.T*(H*(_F*sigma_t*_F.T + sigma_x)*H.T + sigma_z).I
+        mu_t_plus_one = _F*mu_t + K_t_plus_one*(z_t_plus_one - H*_F*mu_t)
+        sigma_t_plus_one = (I - K_t_plus_one*H)*(_F*sigma_t*_F.T + sigma_x)
+
+        self.kalman_vars['mu'] = mu_t_plus_one
+        self.kalman_vars['sigma'] = sigma_t_plus_one
+        print(self.kalman_vars['mu'])
+        print(self.kalman_vars['sigma'])
 
     ########################################################################
     ########################################################################
@@ -184,7 +205,7 @@ class Agent(object):
         X, Y = np.meshgrid(x, y)
         Z = mlab.bivariate_normal(X, Y, s_tx, s_ty, mu_tx, mu_ty, s_txy)
         plt.clf()
-        plt.pcolormesh(X, Y, Z, cmap='hot')
+        plt.pcolormesh(X, Y, Z, cmap='brg')  #'binary')  #'hot')
         plt.draw()
 
     ########################################################################
@@ -240,20 +261,18 @@ class Agent(object):
 
     #     return future_duck_pos
 
-
     def find_first_hitable_location_c(self, time_diff):
         duck_state = self.kalman_vars['mu']
         duck_v     = sqrt(pow(duck_state[1, 0], 2.0) + pow(duck_state[4, 0], 2.0))
 
-        target_startX    = duck_state[0,0]
-        target_startY    = duck_state[3,0]
+        target_startX    = duck_state[0, 0]
+        target_startY    = duck_state[3, 0]
 
-        target_velocityX = duck_state[2,0]
-        target_velocityY = duck_state[4,0]
+        target_velocityX = duck_state[2, 0]
+        target_velocityY = duck_state[4, 0]
 
-        target_startX = target_startX + target_velocityX * 1
-        target_startY = target_startY + target_velocityY * 1
-
+        #target_startX = target_startX + target_velocityX * 1
+        #target_startY = target_startY + target_velocityY * 1
 
         if self.hunter.time_to_reload > 0:
             target_startX = target_startX + target_velocityX * self.hunter.time_to_reload
@@ -286,13 +305,13 @@ class Agent(object):
         #simply choose the smaller positive value.
         t = 0
         if t1 < 0 or t2 < 0:
-            t = max(t1,t2)
+            t = max(t1, t2)
         elif t1 < 0 and t2 < 0:
             print "Both times are negative!! Crap!"
         else:
-            t = min(t1,t2)
+            t = min(t1, t2)
 
-        future_duck_mu = self.predict_target_future_mu(t+2)
+        future_duck_mu = self.predict_target_future_mu(t)
         aim_2          = (future_duck_mu[0, 0], future_duck_mu[3, 0])
 
         aim = (t * target_velocityX + target_startX, 
